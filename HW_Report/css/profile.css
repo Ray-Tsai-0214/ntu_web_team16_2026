@@ -1,0 +1,343 @@
+/* Color Palette from Reference Image & Variables Setup */
+:root {
+  --lightGreen: #d8d8a3;
+  --lightPeach: #ffe1c5;
+  --paleCream: #ffedcc;
+  --mutedBrown: #b29586;
+  
+  /* Derived UI Colors for Contrast and Backgrounds */
+  --bgLight: #faf8f5; 
+  --cardWhite: #ffffff;
+  --textDark: #5a4b43; 
+  --textLight: #8c776c;
+  
+  /* Layout constraints */
+  --borderRadiusCard: 16px;
+  --borderRadiusPill: 999px;
+}
+
+/* Reset & Base Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background-color: #e0e0e0; 
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  color: var(--textDark);
+}
+
+/* Mobile-First Container Simulator */
+.app-container {
+  width: 100%;
+  max-width: 480px;
+  min-width: 375px;
+  height: 100vh;
+  background-color: var(--paleCream);
+  position: relative;
+  overflow-y: auto;
+  overflow-x: hidden;
+  box-shadow: 0 0 20px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+  /* Removed the 80px bottom padding since the nav bar is gone */
+}
+
+/* Profile Header */
+.profile-header {
+  display: flex;
+  flex-direction: column;
+  padding: 20px 20px 24px;
+  background: linear-gradient(to bottom right, var(--lightPeach), var(--paleCream));
+  border-bottom-left-radius: 24px;
+  border-bottom-right-radius: 24px;
+}
+
+.header-top {
+  width: 100%;
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 16px;
+}
+
+.back-btn {
+  background-color: rgba(255, 255, 255, 0.5);
+  border: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: var(--mutedBrown);
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 5px rgba(178, 149, 134, 0.1);
+}
+
+.back-btn:hover {
+  background-color: var(--cardWhite);
+  transform: translateX(-2px);
+}
+
+.header-main {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.pet-avatar-container {
+  width: 80px;
+  height: 80px;
+  background-color: var(--cardWhite);
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 2.5rem;
+  box-shadow: 0 4px 10px rgba(178, 149, 134, 0.2);
+  border: 3px solid var(--lightGreen);
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.username {
+  font-size: 1.4rem;
+  color: var(--mutedBrown);
+  font-weight: 700;
+}
+
+.user-id {
+  font-size: 0.85rem;
+  color: var(--textLight);
+}
+
+.level-badge {
+  display: inline-block;
+  background-color: var(--lightGreen);
+  color: var(--textDark);
+  padding: 4px 12px;
+  border-radius: var(--borderRadiusPill);
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-top: 6px;
+  width: fit-content;
+}
+
+.level-badge i {
+  color: var(--cardWhite);
+  margin-right: 4px;
+}
+
+/* Stats Row */
+.stats-row {
+  display: flex;
+  justify-content: space-around;
+  padding: 20px;
+  background-color: var(--cardWhite);
+  margin: 16px;
+  border-radius: var(--borderRadiusCard);
+  box-shadow: 0 2px 8px rgba(178, 149, 134, 0.1);
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.stat-value {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--mutedBrown);
+}
+
+.stat-label {
+  font-size: 0.8rem;
+  color: var(--textLight);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Tabs */
+.tab-container {
+  display: flex;
+  margin: 0 16px;
+  background-color: var(--cardWhite);
+  border-radius: var(--borderRadiusPill);
+  padding: 4px;
+  box-shadow: 0 2px 8px rgba(178, 149, 134, 0.1);
+}
+
+.tab-btn {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  background: transparent;
+  border-radius: var(--borderRadiusPill);
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--textLight);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.tab-btn.active {
+  background-color: var(--lightPeach);
+  color: var(--mutedBrown);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+/* Post Feed */
+.post-feed {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.post-card {
+  background-color: var(--cardWhite);
+  border-radius: var(--borderRadiusCard);
+  padding: 16px;
+  box-shadow: 0 3px 10px rgba(178, 149, 134, 0.1);
+  transition: transform 0.2s ease;
+}
+
+.post-card:hover {
+  transform: translateY(-2px);
+}
+
+.post-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.author-avatar {
+  width: 40px;
+  height: 40px;
+  background-color: var(--paleCream);
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.2rem;
+}
+
+.author-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.author-name {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--mutedBrown);
+}
+
+.author-level {
+  font-size: 0.75rem;
+  background-color: var(--lightGreen);
+  color: var(--textDark);
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-left: 4px;
+}
+
+.post-time {
+  font-size: 0.8rem;
+  color: var(--textLight);
+}
+
+.post-content {
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin-bottom: 12px;
+  color: var(--textDark);
+}
+
+.post-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.tag {
+  background-color: var(--bgLight);
+  color: var(--mutedBrown);
+  font-size: 0.8rem;
+  padding: 4px 10px;
+  border-radius: var(--borderRadiusPill);
+  border: 1px solid var(--lightPeach);
+}
+
+.post-reactions {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  margin-bottom: 8px;
+  /* Hide scrollbar for cleaner look */
+  scrollbar-width: none; 
+}
+.post-reactions::-webkit-scrollbar {
+  display: none;
+}
+
+.reaction-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background-color: var(--bgLight);
+  border: 1px solid transparent;
+  padding: 6px 12px;
+  border-radius: var(--borderRadiusPill);
+  font-size: 0.9rem;
+  color: var(--textLight);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.reaction-btn.active {
+  background-color: var(--lightPeach);
+  border-color: var(--mutedBrown);
+  color: var(--mutedBrown);
+  font-weight: 600;
+}
+
+.post-actions {
+  border-top: 1px solid var(--paleCream);
+  padding-top: 12px;
+}
+
+.reply-btn {
+  background: none;
+  border: none;
+  color: var(--textLight);
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: color 0.2s ease;
+}
+
+.reply-btn:hover {
+  color: var(--mutedBrown);
+}
