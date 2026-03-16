@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OMG - Upload Story</title>
+  <link rel="stylesheet" href="css/upload.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  <main class="app-container">
+    <header class="upload-header">
+      <div class="header-row">
+        <button class="icon-btn" aria-label="Go back">
+          <i class="fa-solid fa-chevron-left"></i>
+        </button>
+        <div class="header-copy">
+          <p class="eyebrow">Create Post</p>
+          <h1>Spill the story</h1>
+          <p class="subtitle">Post a quick rumor, sighting, or tiny urban legend near you.</p>
+        </div>
+        <div class="quota-badge">2/2 today</div>
+      </div>
+    </header>
+
+    <section class="hero-card">
+      <div class="hero-copy">
+        <span class="section-kicker">Current landmark</span>
+        <h2>NTU Main Library</h2>
+        <p>Auto-detected within 200m. Lv.4 users can create a new spot if needed.</p>
+      </div>
+      <button class="secondary-btn" type="button">
+        <i class="fa-solid fa-location-dot"></i>
+        Change spot
+      </button>
+    </section>
+
+    <section class="editor-card">
+      <div class="editor-top">
+        <div class="pet-chip">
+          <span class="pet-avatar">P</span>
+          <div>
+            <p class="pet-label">Writing buddy</p>
+            <p class="pet-name">Mochi is listening</p>
+          </div>
+        </div>
+        <div class="char-counter">0 / 300</div>
+      </div>
+
+      <label class="field-label" for="story-input">Story</label>
+      <textarea id="story-input" class="story-input" placeholder="What strange thing did you see here today?"></textarea>
+
+      <div class="media-panel">
+        <div class="panel-head">
+          <div>
+            <p class="field-label">Photo</p>
+            <p class="panel-note">Optional. Add one image to make the rumor more vivid.</p>
+          </div>
+          <span class="status-pill">Image optional</span>
+        </div>
+
+        <label class="upload-dropzone" for="media-input">
+          <input id="media-input" type="file" accept="image/*">
+          <span class="upload-icon">
+            <i class="fa-solid fa-camera-retro"></i>
+          </span>
+          <strong>Tap to upload</strong>
+          <span>JPG, PNG, or a quick phone snapshot</span>
+        </label>
+      </div>
+    </section>
+
+    <section class="tags-card">
+      <div class="panel-head">
+        <div>
+          <p class="field-label">Tags</p>
+          <p class="panel-note">Pick a few quick labels so the feed is easier to scan.</p>
+        </div>
+      </div>
+
+      <div class="tag-grid">
+        <button class="tag-chip active" type="button">#funny</button>
+        <button class="tag-chip" type="button">#food</button>
+        <button class="tag-chip active" type="button">#weird</button>
+        <button class="tag-chip" type="button">#animal</button>
+        <button class="tag-chip" type="button">#service</button>
+        <button class="tag-chip" type="button">#spooky</button>
+        <button class="tag-chip" type="button">#urban-legend</button>
+        <button class="tag-chip" type="button">#campus</button>
+      </div>
+    </section>
+
+    <section class="tips-card">
+      <div class="tips-icon">
+        <i class="fa-solid fa-sparkles"></i>
+      </div>
+      <div class="tips-copy">
+        <p class="field-label">Before you post</p>
+        <ul class="tips-list">
+          <li>Keep it short, specific, and easy to verify on-site.</li>
+          <li>Stay within the 300 character limit for a cleaner feed card.</li>
+          <li>Image upload unlocks fully from Lv.2 and above.</li>
+        </ul>
+      </div>
+    </section>
+
+    <footer class="action-bar">
+      <div class="draft-status">
+        <span class="status-dot"></span>
+        Draft ready
+      </div>
+      <div class="action-group">
+        <button class="ghost-btn" type="button">Save draft</button>
+        <button class="submit-btn" type="button">Publish</button>
+      </div>
+    </footer>
+  </main>
+</body>
+</html>
