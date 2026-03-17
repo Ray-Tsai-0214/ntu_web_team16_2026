@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OMG - Map Home</title>
+    <!-- 引入圖示庫 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/home.css">
+</head>
+<body>
+
+    <main class="app-container">
+        <!-- 頂部標題欄 -->
+        <header class="home-header">
+            <div class="logo">OMG</div>
+            <div class="user-status"><i class="fa-solid fa-bell"></i></div>
+        </header>
+
+        <!-- 地圖區域 -->
+        <div class="map-container" id="mapContainer">
+            <!-- 地圖背景圖片 -->
+            <div class="map-bg"></div>
+            
+            <!-- 局部遮罩層 (僅限地圖範圍) -->
+            <div class="fab-overlay" id="fabOverlay"></div>
+            
+            <!-- 標記點將由 JS 動態產生於此 -->
+        </div>
+
+        <!-- 底部功能鍵組 -->
+        <div class="fab-wrapper" id="fabWrapper">
+            <!-- 子按鈕 1: Profile -->
+            <a href="profile.html" class="fab-child">
+                <i class="fa-solid fa-user"></i>
+            </a>
+            <!-- 子按鈕 2: Upload -->
+            <a href="upload.html" class="fab-child">
+                <i class="fa-solid fa-camera"></i>
+            </a>
+            <!-- 子按鈕 3: Pet -->
+            <a href="pet.html" class="fab-child">
+                <i class="fa-solid fa-paw"></i>
+            </a>
+
+
+            <!-- 主功能按鈕 -->
+            <button class="fab-main" id="fabToggle">
+                <i class="fa-solid fa-plus"></i>
+            </button>
+        </div>
+    </main>
+
+    <script>
+        const fabWrapper = document.getElementById('fabWrapper');
+        const fabToggle = document.getElementById('fabToggle');
+        const fabOverlay = document.getElementById('fabOverlay');
+        const mapContainer = document.getElementById('mapContainer');
+
+        // --- 1. 底部選單與遮罩邏輯 ---
+        fabToggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isActive = fabWrapper.classList.toggle('active');
+            // 連動遮罩顯示/隱藏
+            if (isActive) {
+                fabOverlay.classList.add('active');
+            } else {
+                fabOverlay.classList.remove('active');
+            }
+        });
+
+        // 點擊遮罩區域自動縮回
+        fabOverlay.addEventListener('click', () => {
+            fabWrapper.classList.remove('active');
+            fabOverlay.classList.remove('active');
+        });
+
+        // --- 2. 產生隨機地圖標記 ---
+        const markerCount = 5; 
+        for (let i = 0; i < markerCount; i++) {
+            const marker = document.createElement('div');
+            marker.className = 'map-marker';
+            
+            // 隨機座標 (10%~90% 之間避免貼邊)
+            const randomX = Math.floor(Math.random() * 80) + 10; 
+            const randomY = Math.floor(Math.random() * 70) + 15;
+            
+            marker.style.left = `${randomX}%`;
+            marker.style.top = `${randomY}%`;
+            
+            // 點擊標記點放大
+            marker.addEventListener('click', function(e) {
+                e.stopPropagation();
+                // 切換放大類別，並移除其他點的放大狀態
+                document.querySelectorAll('.map-marker').forEach(m => {
+                    if (m !== this) m.classList.remove('enlarge');
+                });
+                this.classList.toggle('enlarge');
+            });
+
+            mapContainer.appendChild(marker);
+        }
+
+        // 點擊地圖空白處重置標記點大小
+        document.addEventListener('click', (e) => {
+            if (!e.target.classList.contains('map-marker')) {
+                document.querySelectorAll('.map-marker').forEach(m => m.classList.remove('enlarge'));
+            }
+        });
+    </script>
+</body>
+</html>
