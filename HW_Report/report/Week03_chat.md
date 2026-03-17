@@ -1,4 +1,7 @@
 # 林芷葳 
+
+[Claude Chat Link](https://claude.ai/share/2b2825bd-aa86-459e-bd40-d463b40890fb)
+
 # 韓承芯 
 
 我要寫一個手機版網頁，html和css分為兩個檔案分別命名為home.html跟home.css。頁面的底部中央有一個圓形的功能鍵，當點擊時會在周遭出現環繞的三個圓型按鈕，跟別對應切換到proflie.html、pet.html、upload.html。

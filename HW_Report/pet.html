@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>我的寵物</title>
+  <link rel="stylesheet" href="css/pet.css" />
+</head>
+<body>
+
+  <div class="phoneShell">
+
+    <!-- Background -->
+    <div class="sceneBg">
+      <div class="bubble"></div>
+      <div class="bubble"></div>
+      <div class="bubble"></div>
+      <div class="bubble"></div>
+    </div>
+    <div class="sceneFloor"></div>
+    <div class="sceneRug"></div>
+
+    <!-- Top Bar：返回 ＋ 寵物名字 -->
+    <header class="topBar">
+      <button class="btnBack" aria-label="返回" onclick="window.location.href='home.html'">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M15 19l-7-7 7-7"/>
+        </svg>
+      </button>
+
+      <div class="petNameWrapper">
+        <span class="petName">泡泡 🐾</span>
+      </div>
+
+      <!-- placeholder so name stays centred -->
+      <div style="width:36px; flex-shrink:0;"></div>
+    </header>
+
+    <!-- Stats：右上角（寶石 / 經驗值 / 飢餓度） -->
+    <aside class="statsCluster">
+
+      <!-- 把 gemRow 和 經驗值 statCard 包在一起 -->
+<div style="display:flex; align-items:center; gap:6px;">
+  <div class="gemRow">
+    <span class="gemIcon">💎</span>
+    <span class="gemValue">320</span>
+  </div>
+  <div class="statCard">
+    <div class="statLabel"><span>⭐</span> 經驗值</div>
+    <div class="barTrack">
+      <div class="barFill barFillExp" id="barExp"></div>
+    </div>
+  </div>
+</div>
+
+<!-- 飢餓度單獨一行 -->
+<div class="statCard">
+  <div class="statLabel"><span>🍖</span> 飢餓度</div>
+  <div class="barTrack">
+    <div class="barFill barFillHunger" id="barHunger"></div>
+  </div>
+</div>
+
+    </aside>
+
+    <!-- 寵物角色（中央） -->
+    <div class="petWrapper" id="petWrapper" onclick="petTap()">
+      <span class="heartPop" id="heartPop">💕</span>
+      <!-- 以 SVG 繪製簡單可愛貓咪角色 -->
+      <svg class="petCharacter" viewBox="0 0 110 110" xmlns="http://www.w3.org/2000/svg">
+        <!-- 身體 -->
+        <ellipse cx="55" cy="72" rx="28" ry="24" fill="#fff6ee" stroke="#e8c9b0" stroke-width="1.5"/>
+        <!-- 衣服 -->
+        <ellipse cx="55" cy="78" rx="22" ry="16" fill="#ffe1c5" stroke="#e8c9b0" stroke-width="1"/>
+        <!-- 頭 -->
+        <circle cx="55" cy="46" r="26" fill="#fff6ee" stroke="#e8c9b0" stroke-width="1.5"/>
+        <!-- 左耳 -->
+        <polygon points="32,28 26,10 44,22" fill="#fff6ee" stroke="#e8c9b0" stroke-width="1.5" stroke-linejoin="round"/>
+        <polygon points="34,26 29,14 42,23" fill="#ffcfb3" stroke="none"/>
+        <!-- 右耳 -->
+        <polygon points="78,28 84,10 66,22" fill="#fff6ee" stroke="#e8c9b0" stroke-width="1.5" stroke-linejoin="round"/>
+        <polygon points="76,26 81,14 68,23" fill="#ffcfb3" stroke="none"/>
+        <!-- 斑紋 -->
+        <ellipse cx="43" cy="40" rx="7" ry="9" fill="#ffd9bf" opacity="0.5"/>
+        <ellipse cx="67" cy="40" rx="7" ry="9" fill="#ffd9bf" opacity="0.5"/>
+        <!-- 眼睛 -->
+        <circle cx="46" cy="44" r="5" fill="#5a3e2b"/>
+        <circle cx="64" cy="44" r="5" fill="#5a3e2b"/>
+        <circle cx="48" cy="42" r="1.8" fill="white"/>
+        <circle cx="66" cy="42" r="1.8" fill="white"/>
+        <!-- 鼻子 -->
+        <ellipse cx="55" cy="51" rx="3.5" ry="2.5" fill="#f4a0a0"/>
+        <!-- 嘴 -->
+        <path d="M51,54 Q55,58 59,54" stroke="#e88a8a" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        <!-- 鬍鬚 左 -->
+        <line x1="29" y1="50" x2="48" y2="52" stroke="#c9a98a" stroke-width="1" opacity="0.7"/>
+        <line x1="29" y1="54" x2="48" y2="54" stroke="#c9a98a" stroke-width="1" opacity="0.7"/>
+        <!-- 鬍鬚 右 -->
+        <line x1="81" y1="50" x2="62" y2="52" stroke="#c9a98a" stroke-width="1" opacity="0.7"/>
+        <line x1="81" y1="54" x2="62" y2="54" stroke="#c9a98a" stroke-width="1" opacity="0.7"/>
+        <!-- 左手 -->
+        <ellipse cx="28" cy="76" rx="8" ry="6" fill="#fff6ee" stroke="#e8c9b0" stroke-width="1.5" transform="rotate(-20,28,76)"/>
+        <!-- 右手 -->
+        <ellipse cx="82" cy="76" rx="8" ry="6" fill="#fff6ee" stroke="#e8c9b0" stroke-width="1.5" transform="rotate(20,82,76)"/>
+        <!-- 尾巴 -->
+        <path d="M80,90 Q100,80 95,65 Q91,56 85,60" stroke="#e8c9b0" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+        <!-- 腳 -->
+        <ellipse cx="44" cy="95" rx="9" ry="6" fill="#fff6ee" stroke="#e8c9b0" stroke-width="1.5"/>
+        <ellipse cx="66" cy="95" rx="9" ry="6" fill="#fff6ee" stroke="#e8c9b0" stroke-width="1.5"/>
+      </svg>
+    </div>
+
+    <!-- Bottom Action Bar：飾品衣櫃（左下）＋ 食物櫃（右下） -->
+    <nav class="actionBar">
+      <div class="actionBtn" onclick="openWardrobe()">
+        <div class="actionCircle actionCircleWardrobe">
+          <span class="actionEmoji">👗</span>
+        </div>
+        <span class="actionLabel">飾品</span>
+      </div>
+      <div class="actionBtn" onclick="openFood()">
+        <div class="actionCircle actionCircleFood">
+          <span class="actionEmoji">🍱</span>
+        </div>
+        <span class="actionLabel">食物</span>
+      </div>
+    </nav>
+
+    <!-- ══ 食物收納箱 Modal ══ -->
+    <div class="modalOverlay" id="foodModal">
+      <div class="modalBox">
+        <div class="modalHeader">
+          <span class="modalTitle">🍱 食物櫃</span>
+          <button class="modalClose" onclick="closeModal('foodModal')" aria-label="關閉">✕</button>
+        </div>
+        <div class="modalGrid">
+          <div class="itemCard" onclick="useItem(this)"><span class="itemEmoji">🐟</span><span class="itemBadge">4</span><span class="itemName">比目魚</span></div>
+          <div class="itemCard" onclick="useItem(this)"><span class="itemEmoji">🐠</span><span class="itemBadge">3</span><span class="itemName">鮭魚</span></div>
+          <div class="itemCard" onclick="useItem(this)"><span class="itemEmoji">🧂</span><span class="itemBadge">4</span><span class="itemName">貓貓鹽</span></div>
+          <div class="itemCard" onclick="useItem(this)"><span class="itemEmoji">🍋</span><span class="itemBadge">3</span><span class="itemName">檸檬果</span></div>
+          <div class="itemCard itemLow" onclick="useItem(this)"><span class="itemEmoji">🥩</span><span class="itemBadge badgeLow">1/4</span><span class="itemName">滋味肉</span></div>
+          <div class="itemCard itemLow" onclick="useItem(this)"><span class="itemEmoji">🍗</span><span class="itemBadge badgeLow">1/4</span><span class="itemName">超雞棒</span></div>
+          <div class="itemCard itemLow" onclick="useItem(this)"><span class="itemEmoji">🍤</span><span class="itemBadge badgeLow">1/4</span><span class="itemName">爆爆蝦</span></div>
+          <div class="itemCard itemLow" onclick="useItem(this)"><span class="itemEmoji">🍏</span><span class="itemBadge badgeLow">1/4</span><span class="itemName">蘋果</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 飾品衣櫃 Modal ══ -->
+    <div class="modalOverlay" id="wardrobeModal">
+      <div class="modalBox">
+        <div class="modalHeader">
+          <span class="modalTitle">👗 飾品衣櫃</span>
+          <button class="modalClose" onclick="closeModal('wardrobeModal')" aria-label="關閉">✕</button>
+        </div>
+        <div class="modalGrid">
+          <div class="itemCard" onclick="useItem(this)"><span class="itemEmoji">👑</span><span class="itemBadge">1</span><span class="itemName">皇冠</span></div>
+          <div class="itemCard" onclick="useItem(this)"><span class="itemEmoji">🎀</span><span class="itemBadge">3</span><span class="itemName">蝴蝶結</span></div>
+          <div class="itemCard" onclick="useItem(this)"><span class="itemEmoji">⭐</span><span class="itemBadge">2</span><span class="itemName">星星髮夾</span></div>
+          <div class="itemCard" onclick="useItem(this)"><span class="itemEmoji">🎩</span><span class="itemBadge">1</span><span class="itemName">魔法帽</span></div>
+          <div class="itemCard itemLow" onclick="useItem(this)"><span class="itemEmoji">🧣</span><span class="itemBadge badgeLow">1/4</span><span class="itemName">小圍巾</span></div>
+          <div class="itemCard itemLow" onclick="useItem(this)"><span class="itemEmoji">🍭</span><span class="itemBadge badgeLow">1/4</span><span class="itemName">糖果裝</span></div>
+          <div class="itemCard itemLow" onclick="useItem(this)"><span class="itemEmoji">🌸</span><span class="itemBadge badgeLow">1/4</span><span class="itemName">花花裙</span></div>
+          <div class="itemCard itemLow" onclick="useItem(this)"><span class="itemEmoji">🌈</span><span class="itemBadge badgeLow">1/4</span><span class="itemName">彩虹披風</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /.phoneShell -->
+
+  <script>
+    function petTap() {
+      const pop = document.getElementById('heartPop');
+      pop.classList.remove('active');
+      void pop.offsetWidth;
+      pop.classList.add('active');
+      setTimeout(() => pop.classList.remove('active'), 900);
+    }
+    function openWardrobe() {
+      document.getElementById('wardrobeModal').classList.add('active');
+    }
+    function openFood() {
+      document.getElementById('foodModal').classList.add('active');
+    }
+    function closeModal(id) {
+      const el = document.getElementById(id);
+      el.classList.add('closing');
+      setTimeout(() => { el.classList.remove('active', 'closing'); }, 260);
+    }
+    document.querySelectorAll('.modalOverlay').forEach(el => {
+      el.addEventListener('click', function(e) {
+        if (e.target === this) closeModal(this.id);
+      });
+    });
+    function useItem(card) {
+      card.classList.add('itemUsed');
+      setTimeout(() => card.classList.remove('itemUsed'), 380);
+    }
+  </script>
+
+</body>
+</html>
