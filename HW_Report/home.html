@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,6 +9,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/home.css">
 </head>
+
 <body>
 
     <main class="app-container">
@@ -21,11 +23,24 @@
         <div class="map-container" id="mapContainer">
             <!-- 地圖背景圖片 -->
             <div class="map-bg"></div>
-            
+
             <!-- 局部遮罩層 (僅限地圖範圍) -->
             <div class="fab-overlay" id="fabOverlay"></div>
-            
+
             <!-- 標記點將由 JS 動態產生於此 -->
+            <div class="post-modal" id="postModal">
+                <div class="polaroid-card">
+                    <button class="close-modal" id="closeModal">&times;</button>
+                    <div class="polaroid-image">
+                        <!-- 預留圖片空間 -->
+                        <img src="assets/cat.jpg" id="modalImage" alt="Post Image">
+                    </div>
+                    <div class="polaroid-content">
+                        <p id="modalText">這裡的貓不理人，給負評</p>
+                        <span class="post-date">2023.10.27</span>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- 底部功能鍵組 -->
@@ -43,7 +58,6 @@
                 <i class="fa-solid fa-paw"></i>
             </a>
 
-
             <!-- 主功能按鈕 -->
             <button class="fab-main" id="fabToggle">
                 <i class="fa-solid fa-plus"></i>
@@ -56,12 +70,13 @@
         const fabToggle = document.getElementById('fabToggle');
         const fabOverlay = document.getElementById('fabOverlay');
         const mapContainer = document.getElementById('mapContainer');
+        const postModal = document.getElementById('postModal');
+        const closeModal = document.getElementById('closeModal');
 
         // --- 1. 底部選單與遮罩邏輯 ---
         fabToggle.addEventListener('click', (e) => {
             e.stopPropagation();
             const isActive = fabWrapper.classList.toggle('active');
-            // 連動遮罩顯示/隱藏
             if (isActive) {
                 fabOverlay.classList.add('active');
             } else {
@@ -69,33 +84,56 @@
             }
         });
 
-        // 點擊遮罩區域自動縮回
+        // 點擊遮罩區域自動縮回 FAB 選單
         fabOverlay.addEventListener('click', () => {
             fabWrapper.classList.remove('active');
             fabOverlay.classList.remove('active');
         });
 
-        // --- 2. 產生隨機地圖標記 ---
-        const markerCount = 5; 
+        // --- 2. 彈窗關閉邏輯 (移到外部，只需執行一次) ---
+        closeModal.addEventListener('click', (e) => {
+            e.stopPropagation(); // 防止觸發到下方的地圖點擊
+            postModal.classList.remove('show');
+        });
+
+        postModal.addEventListener('click', (e) => {
+            // 點擊深色背景處才關閉
+            if (e.target === postModal) {
+                postModal.classList.remove('show');
+            }
+        });
+
+        // --- 3. 產生隨機地圖標記 ---
+        const markerCount = 5;
         for (let i = 0; i < markerCount; i++) {
             const marker = document.createElement('div');
             marker.className = 'map-marker';
-            
-            // 隨機座標 (10%~90% 之間避免貼邊)
-            const randomX = Math.floor(Math.random() * 80) + 10; 
+
+            // 隨機座標
+            const randomX = Math.floor(Math.random() * 80) + 10;
             const randomY = Math.floor(Math.random() * 70) + 15;
-            
+
             marker.style.left = `${randomX}%`;
             marker.style.top = `${randomY}%`;
-            
-            // 點擊標記點放大
-            marker.addEventListener('click', function(e) {
-                e.stopPropagation();
-                // 切換放大類別，並移除其他點的放大狀態
+
+            marker.addEventListener('click', function (e) {
+                e.stopPropagation(); // 防止觸發地圖重置大小的事件
+
+                // 1. 處理標記點放大效果
                 document.querySelectorAll('.map-marker').forEach(m => {
                     if (m !== this) m.classList.remove('enlarge');
                 });
                 this.classList.toggle('enlarge');
+
+                // 2. 直接顯示彈窗 (第一次點擊就會觸發)
+                postModal.classList.add('show');
+
+                // 這裡可以預留之後串接資料的邏輯
+                console.log("點擊了第 " + (i + 1) + " 個標記");
+
+                // 這裡未來可以根據 i 或是資料 ID 來更換圖片與文字
+                // document.getElementById('modalImage').src = data[i].imgUrl;
+                // document.getElementById('modalText').innerText = data[i].content;
             });
 
             mapContainer.appendChild(marker);
@@ -109,4 +147,5 @@
         });
     </script>
 </body>
+
 </html>
