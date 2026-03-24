@@ -48,7 +48,7 @@
       </div>
 
       <label class="field-label" for="story-input">Story</label>
-      <textarea id="story-input" class="story-input" placeholder="What strange thing did you see here today?"></textarea>
+      <textarea id="story-input" class="story-input" maxlength="300" placeholder="What strange thing did you see here today?"></textarea>
 
       <div class="media-panel">
         <div class="panel-head">
@@ -59,7 +59,7 @@
           <span class="status-pill">Image optional</span>
         </div>
 
-        <label class="upload-dropzone" for="media-input">
+        <label class="upload-dropzone" id="dropzone" for="media-input">
           <input id="media-input" type="file" accept="image/*">
           <span class="upload-icon">
             <i class="fa-solid fa-camera-retro"></i>
@@ -67,6 +67,12 @@
           <strong>Tap to upload</strong>
           <span>JPG, PNG, or a quick phone snapshot</span>
         </label>
+        <div class="image-preview" id="image-preview" style="display:none;">
+          <img id="preview-img" src="" alt="Preview">
+          <button class="remove-img-btn" id="remove-img" type="button" aria-label="Remove image">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
       </div>
     </section>
 
@@ -115,5 +121,144 @@
       </div>
     </footer>
   </main>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // --- Character counter ---
+    const storyInput = document.getElementById('story-input');
+    const charCounter = document.querySelector('.char-counter');
+    const MAX_CHARS = 300;
+
+    storyInput.addEventListener('input', () => {
+      const len = storyInput.value.length;
+      charCounter.textContent = `${len} / ${MAX_CHARS}`;
+      charCounter.classList.toggle('over-limit', len >= MAX_CHARS);
+      charCounter.classList.toggle('near-limit', len >= 250 && len < MAX_CHARS);
+    });
+
+    // --- Tag toggle ---
+    document.querySelectorAll('.tag-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        chip.classList.toggle('active');
+      });
+    });
+
+    // --- Image upload & drag-and-drop ---
+    const dropzone = document.getElementById('dropzone');
+    const mediaInput = document.getElementById('media-input');
+    const imagePreview = document.getElementById('image-preview');
+    const previewImg = document.getElementById('preview-img');
+    const removeBtn = document.getElementById('remove-img');
+    const statusPill = document.querySelector('.status-pill');
+
+    function showPreview(file) {
+      if (!file || !file.type.startsWith('image/')) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        previewImg.src = e.target.result;
+        imagePreview.style.display = 'block';
+        dropzone.style.display = 'none';
+        statusPill.textContent = 'Image added';
+        statusPill.classList.add('has-image');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    mediaInput.addEventListener('change', () => {
+      if (mediaInput.files[0]) showPreview(mediaInput.files[0]);
+    });
+
+    removeBtn.addEventListener('click', () => {
+      mediaInput.value = '';
+      previewImg.src = '';
+      imagePreview.style.display = 'none';
+      dropzone.style.display = 'flex';
+      statusPill.textContent = 'Image optional';
+      statusPill.classList.remove('has-image');
+    });
+
+    // Drag-and-drop
+    ['dragenter', 'dragover'].forEach(evt => {
+      dropzone.addEventListener(evt, (e) => {
+        e.preventDefault();
+        dropzone.classList.add('drag-over');
+      });
+    });
+
+    ['dragleave', 'drop'].forEach(evt => {
+      dropzone.addEventListener(evt, (e) => {
+        e.preventDefault();
+        dropzone.classList.remove('drag-over');
+      });
+    });
+
+    dropzone.addEventListener('drop', (e) => {
+      const file = e.dataTransfer.files[0];
+      if (file) showPreview(file);
+    });
+
+    // --- Toast notification ---
+    function showToast(message, type = 'success') {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.className = `toast show ${type}`;
+      setTimeout(() => toast.classList.remove('show'), 2500);
+    }
+
+    // --- Back button ---
+    document.querySelector('.icon-btn').addEventListener('click', () => {
+      if (document.referrer) {
+        history.back();
+      } else {
+        window.location.href = 'home.html';
+      }
+    });
+
+    // --- Save draft ---
+    document.querySelector('.ghost-btn').addEventListener('click', () => {
+      const draft = {
+        story: storyInput.value,
+        tags: [...document.querySelectorAll('.tag-chip.active')].map(t => t.textContent),
+      };
+      localStorage.setItem('upload_draft', JSON.stringify(draft));
+      showToast('Draft saved!');
+    });
+
+    // --- Load draft on page load ---
+    (function loadDraft() {
+      const saved = localStorage.getItem('upload_draft');
+      if (!saved) return;
+      const draft = JSON.parse(saved);
+      if (draft.story) {
+        storyInput.value = draft.story;
+        storyInput.dispatchEvent(new Event('input'));
+      }
+      if (draft.tags) {
+        document.querySelectorAll('.tag-chip').forEach(chip => {
+          chip.classList.toggle('active', draft.tags.includes(chip.textContent));
+        });
+      }
+    })();
+
+    // --- Publish validation ---
+    document.querySelector('.submit-btn').addEventListener('click', () => {
+      const story = storyInput.value.trim();
+      const activeTags = document.querySelectorAll('.tag-chip.active');
+
+      if (!story) {
+        showToast('Please write your story first!', 'error');
+        storyInput.focus();
+        return;
+      }
+      if (activeTags.length === 0) {
+        showToast('Please select at least one tag.', 'error');
+        return;
+      }
+
+      showToast('Story published successfully!');
+      localStorage.removeItem('upload_draft');
+    });
+  </script>
 </body>
 </html>
