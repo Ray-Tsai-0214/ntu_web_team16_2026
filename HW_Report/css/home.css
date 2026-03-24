@@ -292,3 +292,48 @@ body {
     display: block;
     text-align: right;
 }
+
+/* --- 拍立得動作按鈕 --- */
+.polaroid-actions {
+    display: flex;
+    gap: 20px;
+    margin: 15px 0;
+    padding-top: 10px;
+    border-top: 1px dashed #eee; /* 增加一條虛線區隔文字 */
+}
+
+.action-item {
+    background: none;
+    border: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--mutedBrown);
+    cursor: pointer;
+    font-size: 1.1rem;
+    transition: all 0.2s ease;
+    padding: 5px 0;
+}
+
+.action-item i {
+    font-size: 1.2rem;
+}
+
+/* 點擊後的活躍狀態 */
+.action-item.active.like-active {
+    color: #ff4757; /* 愛心變紅 */
+}
+
+.action-item.active.save-active {
+    color: #ffa502; /* 收藏變橘黃 */
+}
+
+.action-item .count {
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+/* 點擊時的微縮放動畫 */
+.action-item:active {
+    transform: scale(1.2);
+}

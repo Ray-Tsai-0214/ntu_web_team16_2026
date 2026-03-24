@@ -37,6 +37,16 @@
                     </div>
                     <div class="polaroid-content">
                         <p id="modalText">這裡的貓不理人，給負評</p>
+                        <div class="polaroid-actions">
+                            <button class="action-item" id="likeBtn">
+                                <i class="fa-regular fa-heart"></i>
+                                <span class="count">0</span>
+                            </button>
+                            <button class="action-item" id="saveBtn">
+                                <i class="fa-regular fa-bookmark"></i>
+                                <span class="count">0</span>
+                            </button>
+                        </div>
                         <span class="post-date">2023.10.27</span>
                     </div>
                 </div>
@@ -103,41 +113,129 @@
             }
         });
 
-        // --- 3. 產生隨機地圖標記 ---
-        const markerCount = 5;
-        for (let i = 0; i < markerCount; i++) {
-            const marker = document.createElement('div');
-            marker.className = 'map-marker';
+        // --- 3. 模擬資料庫資料 (未來你可以從後台獲取這串 JSON) ---
+const postsData = [
+    {
+        id: 1,
+        img: 'assets/cat.jpg',
+        text: '他不答應跟我交換身體，差評',
+        date: '2023.10.27',
+        likes: 5,
+        saves: 2,
+        isLiked: false,
+        isSaved: false
+    },
+    {
+        id: 2,
+        img: 'assets/map.jpg', // 這裡換成你其他的圖片路徑
+        text: '是誰在這裡迷路了?是我',
+        date: '2023.10.28',
+        likes: 12,
+        saves: 8,
+        isLiked: false,
+        isSaved: false
+    },
+    {
+        id: 3,
+        img: 'assets/eat.jpg',
+        text: '沒有鳳梨，一點都不道地',
+        date: '2023.10.29',
+        likes: 20,
+        saves: 1,
+        isLiked: false,
+        isSaved: false
+    },
+    // 你可以根據 markerCount 增加更多資料...
+];
 
-            // 隨機座標
-            const randomX = Math.floor(Math.random() * 80) + 10;
-            const randomY = Math.floor(Math.random() * 70) + 15;
+let currentPostIndex = null; // 用來記錄當前彈窗顯示的是哪一則貼文
 
-            marker.style.left = `${randomX}%`;
-            marker.style.top = `${randomY}%`;
+// --- 4. 產生標記與資料綁定 ---
+const markerCount = postsData.length; // 根據資料數量產生標記
 
-            marker.addEventListener('click', function (e) {
-                e.stopPropagation(); // 防止觸發地圖重置大小的事件
+for (let i = 0; i < markerCount; i++) {
+    const marker = document.createElement('div');
+    marker.className = 'map-marker';
 
-                // 1. 處理標記點放大效果
-                document.querySelectorAll('.map-marker').forEach(m => {
-                    if (m !== this) m.classList.remove('enlarge');
-                });
-                this.classList.toggle('enlarge');
+    const randomX = Math.floor(Math.random() * 80) + 10;
+    const randomY = Math.floor(Math.random() * 70) + 15;
+    marker.style.left = `${randomX}%`;
+    marker.style.top = `${randomY}%`;
 
-                // 2. 直接顯示彈窗 (第一次點擊就會觸發)
-                postModal.classList.add('show');
+    // 點擊標記
+    marker.addEventListener('click', function (e) {
+        e.stopPropagation();
+        
+        // 1. 放大效果
+        document.querySelectorAll('.map-marker').forEach(m => m.classList.remove('enlarge'));
+        this.classList.add('enlarge');
 
-                // 這裡可以預留之後串接資料的邏輯
-                console.log("點擊了第 " + (i + 1) + " 個標記");
+        // 2. 更新彈窗內容
+        updateModal(i);
 
-                // 這裡未來可以根據 i 或是資料 ID 來更換圖片與文字
-                // document.getElementById('modalImage').src = data[i].imgUrl;
-                // document.getElementById('modalText').innerText = data[i].content;
-            });
+        // 3. 顯示彈窗
+        postModal.classList.add('show');
+    });
 
-            mapContainer.appendChild(marker);
-        }
+    mapContainer.appendChild(marker);
+}
+
+// 函式：根據索引值更新彈窗內容
+function updateModal(index) {
+    currentPostIndex = index;
+    const data = postsData[index];
+
+    // 填入圖片、文字、日期
+    document.getElementById('modalImage').src = data.img;
+    document.getElementById('modalText').innerText = data.text;
+    document.querySelector('.post-date').innerText = data.date;
+
+    // 填入愛心與收藏數字
+    const likeCountSpan = likeBtn.querySelector('.count');
+    const saveCountSpan = saveBtn.querySelector('.count');
+    likeCountSpan.innerText = data.likes;
+    saveCountSpan.innerText = data.saves;
+
+    // 恢復按鈕狀態 (如果之前點過，要顯示實心)
+    if (data.isLiked) {
+        likeBtn.classList.add('like-active', 'active');
+        likeBtn.querySelector('i').classList.replace('fa-regular', 'fa-solid');
+    } else {
+        likeBtn.classList.remove('like-active', 'active');
+        likeBtn.querySelector('i').classList.replace('fa-solid', 'fa-regular');
+    }
+
+    if (data.isSaved) {
+        saveBtn.classList.add('save-active', 'active');
+        saveBtn.querySelector('i').classList.replace('fa-regular', 'fa-solid');
+    } else {
+        saveBtn.classList.remove('save-active', 'active');
+        saveBtn.querySelector('i').classList.replace('fa-solid', 'fa-regular');
+    }
+}
+
+// --- 5. 獨立的愛心與收藏邏輯 (會修改 postsData) ---
+likeBtn.addEventListener('click', function (e) {
+    e.stopPropagation();
+    if (currentPostIndex === null) return;
+    
+    const data = postsData[currentPostIndex];
+    data.isLiked = !data.isLiked; // 切換狀態
+    data.likes += data.isLiked ? 1 : -1; // 增減數字
+    
+    updateModal(currentPostIndex); // 重新刷新介面顯示
+});
+
+saveBtn.addEventListener('click', function (e) {
+    e.stopPropagation();
+    if (currentPostIndex === null) return;
+
+    const data = postsData[currentPostIndex];
+    data.isSaved = !data.isSaved;
+    data.saves += data.isSaved ? 1 : -1;
+    
+    updateModal(currentPostIndex);
+});
 
         // 點擊地圖空白處重置標記點大小
         document.addEventListener('click', (e) => {
@@ -145,6 +243,8 @@
                 document.querySelectorAll('.map-marker').forEach(m => m.classList.remove('enlarge'));
             }
         });
+
+
     </script>
 </body>
 
