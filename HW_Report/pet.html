@@ -27,46 +27,47 @@
           <path d="M15 19l-7-7 7-7"/>
         </svg>
       </button>
-
       <div class="petNameWrapper">
         <span class="petName">泡泡 🐾</span>
       </div>
-
-      <!-- placeholder so name stays centred -->
       <div style="width:36px; flex-shrink:0;"></div>
     </header>
 
     <!-- Stats：右上角（寶石 / 經驗值 / 飢餓度） -->
     <aside class="statsCluster">
 
-      <!-- 把 gemRow 和 經驗值 statCard 包在一起 -->
-<div style="display:flex; align-items:center; gap:6px;">
-  <div class="gemRow">
-    <span class="gemIcon">💎</span>
-    <span class="gemValue">320</span>
-  </div>
-  <div class="statCard">
-    <div class="statLabel"><span>⭐</span> 經驗值</div>
-    <div class="barTrack">
-      <div class="barFill barFillExp" id="barExp"></div>
-    </div>
-  </div>
-</div>
+      <!-- 寶石 + 經驗值 -->
+      <div style="display:flex; align-items:center; gap:6px;">
+        <div class="gemRow">
+          <span class="gemIcon">💎</span>
+          <span class="gemValue" id="gemValue">1000</span>
+        </div>
+        <div class="statCard">
+          <div class="statLabel"><span>⭐</span> 經驗值</div>
+          <div class="barTrack">
+            <div class="barFill barFillExp" id="barExp" style="width:0%"></div>
+          </div>
+          <div class="statNum" id="expText">0 / 100</div>
+        </div>
+      </div>
 
-<!-- 飢餓度單獨一行 -->
-<div class="statCard">
-  <div class="statLabel"><span>🍖</span> 飢餓度</div>
-  <div class="barTrack">
-    <div class="barFill barFillHunger" id="barHunger"></div>
-  </div>
-</div>
+      <!-- 飢餓度 -->
+      <div class="statCard">
+        <div class="statLabel"><span>🍖</span> 飢餓度</div>
+        <div class="barTrack">
+          <div class="barFill barFillHunger" id="barHunger" style="width:0%"></div>
+        </div>
+        <div class="statNum" id="hungerText">0 / 100</div>
+      </div>
 
     </aside>
 
     <!-- 寵物角色（中央） -->
     <div class="petWrapper" id="petWrapper" onclick="petTap()">
+      <!-- 裝備層 -->
+      <div id="petAccessory"></div>
       <span class="heartPop" id="heartPop">💕</span>
-      <!-- 以 SVG 繪製簡單可愛貓咪角色 -->
+      <div class="petSpeech" id="petSpeech"></div>
       <svg class="petCharacter" viewBox="0 0 110 110" xmlns="http://www.w3.org/2000/svg">
         <!-- 身體 -->
         <ellipse cx="55" cy="72" rx="28" ry="24" fill="#fff6ee" stroke="#e8c9b0" stroke-width="1.5"/>
@@ -110,7 +111,7 @@
       </svg>
     </div>
 
-    <!-- Bottom Action Bar：飾品衣櫃（左下）＋ 食物櫃（右下） -->
+    <!-- Bottom Action Bar -->
     <nav class="actionBar">
       <div class="actionBtn" onclick="openWardrobe()">
         <div class="actionCircle actionCircleWardrobe">
@@ -134,14 +135,54 @@
           <button class="modalClose" onclick="closeModal('foodModal')" aria-label="關閉">✕</button>
         </div>
         <div class="modalGrid">
-          <div class="itemCard" onclick="useItem(this)"><span class="itemEmoji">🐟</span><span class="itemBadge">4</span><span class="itemName">比目魚</span></div>
-          <div class="itemCard" onclick="useItem(this)"><span class="itemEmoji">🐠</span><span class="itemBadge">3</span><span class="itemName">鮭魚</span></div>
-          <div class="itemCard" onclick="useItem(this)"><span class="itemEmoji">🧂</span><span class="itemBadge">4</span><span class="itemName">貓貓鹽</span></div>
-          <div class="itemCard" onclick="useItem(this)"><span class="itemEmoji">🍋</span><span class="itemBadge">3</span><span class="itemName">檸檬果</span></div>
-          <div class="itemCard itemLow" onclick="useItem(this)"><span class="itemEmoji">🥩</span><span class="itemBadge badgeLow">1/4</span><span class="itemName">滋味肉</span></div>
-          <div class="itemCard itemLow" onclick="useItem(this)"><span class="itemEmoji">🍗</span><span class="itemBadge badgeLow">1/4</span><span class="itemName">超雞棒</span></div>
-          <div class="itemCard itemLow" onclick="useItem(this)"><span class="itemEmoji">🍤</span><span class="itemBadge badgeLow">1/4</span><span class="itemName">爆爆蝦</span></div>
-          <div class="itemCard itemLow" onclick="useItem(this)"><span class="itemEmoji">🍏</span><span class="itemBadge badgeLow">1/4</span><span class="itemName">蘋果</span></div>
+          <div class="itemCard" onclick="feedPet('比目魚')">
+            <span class="itemEmoji">🐟</span>
+            <span class="itemBadge">4</span>
+            <span class="itemName">比目魚</span>
+            <span class="itemCost">−20💎</span>
+          </div>
+          <div class="itemCard" onclick="feedPet('鮭魚')">
+            <span class="itemEmoji">🐠</span>
+            <span class="itemBadge">3</span>
+            <span class="itemName">鮭魚</span>
+            <span class="itemCost">−25💎</span>
+          </div>
+          <div class="itemCard" onclick="feedPet('貓貓鹽')">
+            <span class="itemEmoji">🧂</span>
+            <span class="itemBadge">4</span>
+            <span class="itemName">貓貓鹽</span>
+            <span class="itemCost">−10💎</span>
+          </div>
+          <div class="itemCard" onclick="feedPet('檸檬果')">
+            <span class="itemEmoji">🍋</span>
+            <span class="itemBadge">3</span>
+            <span class="itemName">檸檬果</span>
+            <span class="itemCost">−15💎</span>
+          </div>
+          <div class="itemCard itemLow" onclick="feedPet('滋味肉')">
+            <span class="itemEmoji">🥩</span>
+            <span class="itemBadge badgeLow">1/4</span>
+            <span class="itemName">滋味肉</span>
+            <span class="itemCost itemCostLow">−40💎</span>
+          </div>
+          <div class="itemCard itemLow" onclick="feedPet('超雞棒')">
+            <span class="itemEmoji">🍗</span>
+            <span class="itemBadge badgeLow">1/4</span>
+            <span class="itemName">超雞棒</span>
+            <span class="itemCost itemCostLow">−35💎</span>
+          </div>
+          <div class="itemCard itemLow" onclick="feedPet('爆爆蝦')">
+            <span class="itemEmoji">🍤</span>
+            <span class="itemBadge badgeLow">1/4</span>
+            <span class="itemName">爆爆蝦</span>
+            <span class="itemCost itemCostLow">−45💎</span>
+          </div>
+          <div class="itemCard itemLow" onclick="feedPet('蘋果')">
+            <span class="itemEmoji">🍏</span>
+            <span class="itemBadge badgeLow">1/4</span>
+            <span class="itemName">蘋果</span>
+            <span class="itemCost itemCostLow">−12💎</span>
+          </div>
         </div>
       </div>
     </div>
@@ -154,49 +195,21 @@
           <button class="modalClose" onclick="closeModal('wardrobeModal')" aria-label="關閉">✕</button>
         </div>
         <div class="modalGrid">
-          <div class="itemCard" onclick="useItem(this)"><span class="itemEmoji">👑</span><span class="itemBadge">1</span><span class="itemName">皇冠</span></div>
-          <div class="itemCard" onclick="useItem(this)"><span class="itemEmoji">🎀</span><span class="itemBadge">3</span><span class="itemName">蝴蝶結</span></div>
-          <div class="itemCard" onclick="useItem(this)"><span class="itemEmoji">⭐</span><span class="itemBadge">2</span><span class="itemName">星星髮夾</span></div>
-          <div class="itemCard" onclick="useItem(this)"><span class="itemEmoji">🎩</span><span class="itemBadge">1</span><span class="itemName">魔法帽</span></div>
-          <div class="itemCard itemLow" onclick="useItem(this)"><span class="itemEmoji">🧣</span><span class="itemBadge badgeLow">1/4</span><span class="itemName">小圍巾</span></div>
-          <div class="itemCard itemLow" onclick="useItem(this)"><span class="itemEmoji">🍭</span><span class="itemBadge badgeLow">1/4</span><span class="itemName">糖果裝</span></div>
-          <div class="itemCard itemLow" onclick="useItem(this)"><span class="itemEmoji">🌸</span><span class="itemBadge badgeLow">1/4</span><span class="itemName">花花裙</span></div>
-          <div class="itemCard itemLow" onclick="useItem(this)"><span class="itemEmoji">🌈</span><span class="itemBadge badgeLow">1/4</span><span class="itemName">彩虹披風</span></div>
+          <div class="itemCard" onclick="useWardrobeItem(this)"><span class="itemEmoji">👑</span><span class="itemBadge">1</span><span class="itemName">皇冠</span></div>
+          <div class="itemCard" onclick="useWardrobeItem(this)"><span class="itemEmoji">🎀</span><span class="itemBadge">3</span><span class="itemName">蝴蝶結</span></div>
+          <div class="itemCard" onclick="useWardrobeItem(this)"><span class="itemEmoji">⭐</span><span class="itemBadge">2</span><span class="itemName">星星髮夾</span></div>
+          <div class="itemCard" onclick="useWardrobeItem(this)"><span class="itemEmoji">🎩</span><span class="itemBadge">1</span><span class="itemName">魔法帽</span></div>
+          <div class="itemCard itemLow" onclick="useWardrobeItem(this)"><span class="itemEmoji">🧣</span><span class="itemBadge badgeLow">1/4</span><span class="itemName">小圍巾</span></div>
+          <div class="itemCard itemLow" onclick="useWardrobeItem(this)"><span class="itemEmoji">🍭</span><span class="itemBadge badgeLow">1/4</span><span class="itemName">糖果裝</span></div>
+          <div class="itemCard itemLow" onclick="useWardrobeItem(this)"><span class="itemEmoji">🌸</span><span class="itemBadge badgeLow">1/4</span><span class="itemName">花花裙</span></div>
+          <div class="itemCard itemLow" onclick="useWardrobeItem(this)"><span class="itemEmoji">🌈</span><span class="itemBadge badgeLow">1/4</span><span class="itemName">彩虹披風</span></div>
         </div>
       </div>
     </div>
 
   </div><!-- /.phoneShell -->
 
-  <script>
-    function petTap() {
-      const pop = document.getElementById('heartPop');
-      pop.classList.remove('active');
-      void pop.offsetWidth;
-      pop.classList.add('active');
-      setTimeout(() => pop.classList.remove('active'), 900);
-    }
-    function openWardrobe() {
-      document.getElementById('wardrobeModal').classList.add('active');
-    }
-    function openFood() {
-      document.getElementById('foodModal').classList.add('active');
-    }
-    function closeModal(id) {
-      const el = document.getElementById(id);
-      el.classList.add('closing');
-      setTimeout(() => { el.classList.remove('active', 'closing'); }, 260);
-    }
-    document.querySelectorAll('.modalOverlay').forEach(el => {
-      el.addEventListener('click', function(e) {
-        if (e.target === this) closeModal(this.id);
-      });
-    });
-    function useItem(card) {
-      card.classList.add('itemUsed');
-      setTimeout(() => card.classList.remove('itemUsed'), 380);
-    }
-  </script>
+  <script src="js/pet.js"></script>
 
 </body>
 </html>

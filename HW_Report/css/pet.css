@@ -88,7 +88,6 @@ body {
   bottom: 110px; left: 0; right: 0;
   height: 120px;
   background: linear-gradient(180deg, transparent 0%, rgba(216,216,163,0.15) 100%);
-  border-top: none;
 }
 
 /* Rug */
@@ -146,7 +145,7 @@ body {
   letter-spacing: 1px;
 }
 
-/* ── Stats (top-right cluster) ── */
+/* ── Stats Cluster ── */
 .statsCluster {
   position: absolute;
   top: 80px;
@@ -173,6 +172,9 @@ body {
   font-size: 13px;
   font-weight: 700;
   color: var(--brownDark);
+  min-width: 28px;
+  text-align: right;
+  transition: transform 0.2s;
 }
 
 .statCard {
@@ -183,11 +185,12 @@ body {
   min-width: 110px;
   box-shadow: 0 2px 8px var(--shadow);
 }
+
 .statLabel {
   font-size: 10px;
   font-weight: 700;
   color: var(--brown);
-  margin-bottom: 4px;
+  margin-bottom: 3px;
   display: flex;
   align-items: center;
   gap: 4px;
@@ -208,12 +211,22 @@ body {
   transition: width 0.5s ease;
 }
 .barFillExp {
-  width: 68%;
+  width: 0%;
   background: linear-gradient(90deg, var(--sage), #c4c47a);
 }
 .barFillHunger {
-  width: 40%;
+  width: 0%;
   background: linear-gradient(90deg, var(--peach), #ffb07c);
+}
+
+/* 數字顯示 */
+.statNum {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--brown);
+  text-align: right;
+  margin-top: 2px;
+  letter-spacing: 0.3px;
 }
 
 /* ── Pet Character ── */
@@ -237,6 +250,46 @@ body {
   height: 110px;
   transition: transform 0.2s;
   filter: drop-shadow(0 6px 12px rgba(178,149,134,0.35));
+}
+
+.petSpeech {
+  position: absolute;
+  bottom: 115px;
+  left: 50%;
+  transform: translateX(-50%) translateY(8px);
+  min-width: 80px;
+  max-width: 160px;
+  padding: 8px 12px;
+  background: #fffdf8;
+  color: var(--brownDark);
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+  border: 2px solid var(--peach);
+  border-radius: 16px;
+  box-shadow: 0 4px 12px var(--shadowMd);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  z-index: 12;
+}
+
+.petSpeech::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -8px;
+  transform: translateX(-50%) rotate(45deg);
+  width: 12px;
+  height: 12px;
+  background: #fffdf8;
+  border-right: 2px solid var(--peach);
+  border-bottom: 2px solid var(--peach);
+}
+
+.petSpeech.active {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
 }
 
 /* ── Bottom Action Bar ── */
@@ -296,7 +349,7 @@ body {
 /* ── Heart pop on pet tap ── */
 .heartPop {
   position: absolute;
-  top: -20px; left: 50%; transform: translateX(-50%);
+  top: -20px; left: 100%; transform: translateX(-50%);
   font-size: 20px;
   pointer-events: none;
   animation: heartFloat 0.9s ease forwards;
@@ -309,9 +362,7 @@ body {
   100% { opacity: 0; transform: translateX(-50%) translateY(-40px) scale(1.4); }
 }
 
-/* ══════════════════════════════
-   Modal Overlay
-══════════════════════════════ */
+/* ══ Modal ══ */
 .modalOverlay {
   position: absolute;
   inset: 0;
@@ -333,7 +384,6 @@ body {
   transform: translateY(100%);
 }
 
-/* ── Modal Box ── */
 .modalBox {
   width: 100%;
   background: var(--white);
@@ -351,13 +401,11 @@ body {
   transform: translateY(0);
 }
 
-/* ── Modal Header ── */
 .modalHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 16px 20px 12px;
-  border-bottom: none;  
   flex-shrink: 0;
 }
 
@@ -368,8 +416,7 @@ body {
   letter-spacing: 0.5px;
 }
 .modalClose {
-  width: 30px;
-  height: 30px;
+  width: 30px; height: 30px;
   border-radius: 50%;
   border: 2px solid var(--peach);
   background: var(--cream);
@@ -377,9 +424,7 @@ body {
   font-size: 13px;
   font-weight: 800;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: flex; align-items: center; justify-content: center;
   line-height: 1;
   transition: transform 0.15s, background 0.15s;
   box-shadow: 0 2px 6px var(--shadow);
@@ -395,8 +440,8 @@ body {
   grid-template-columns: repeat(4, 1fr);
   gap: 10px;
   padding: 16px 16px 8px;
-  overflow-y: auto;          
-  max-height: 220px;         
+  overflow-y: auto;
+  max-height: 240px;
 }
 
 .itemCard {
@@ -412,11 +457,15 @@ body {
   cursor: pointer;
   transition: transform 0.15s, box-shadow 0.15s;
   box-shadow: 0 2px 6px var(--shadow);
-  min-height: 76px;
+  min-height: 82px;
 }
 .itemCard:hover {
   transform: translateY(-3px) scale(1.04);
   box-shadow: 0 6px 14px var(--shadowMd);
+}
+.itemCard:active {
+  transform: scale(0.93);
+  background: var(--peach);
 }
 .itemCard.itemLow {
   background: linear-gradient(135deg, #fff8ef 0%, #ffeedd 100%);
@@ -430,12 +479,11 @@ body {
 .itemEmoji {
   font-size: 26px;
   line-height: 1;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 .itemBadge {
   position: absolute;
-  top: 5px;
-  right: 6px;
+  top: 5px; right: 6px;
   background: var(--sage);
   color: var(--brownDark);
   font-size: 9px;
@@ -454,4 +502,86 @@ body {
   color: var(--brownDark);
   text-align: center;
   line-height: 1.2;
+}
+
+/* 食物費用標籤 */
+.itemCost {
+  font-size: 8.5px;
+  font-weight: 700;
+  color: #a07a6a;
+  margin-top: 1px;
+  letter-spacing: 0.2px;
+}
+.itemCostLow {
+  color: #c0905a;
+}
+
+/* ── Feed Effect ── */
+.feedEffect {
+  position: absolute;
+  left: 50%;
+  bottom: 200px;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  pointer-events: none;
+  animation: feedFloat 1.2s ease forwards;
+  z-index: 30;
+}
+.feedEmoji {
+  font-size: 28px;
+  filter: drop-shadow(0 2px 6px rgba(178,149,134,0.5));
+}
+.feedGain {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--brownDark);
+  background: var(--white);
+  border: 1.5px solid var(--peach);
+  border-radius: 12px;
+  padding: 2px 8px;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px var(--shadow);
+}
+
+@keyframes feedFloat {
+  0%   { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+  80%  { opacity: 1; }
+  100% { opacity: 0; transform: translateX(-50%) translateY(-60px) scale(1.1); }
+}
+
+/* ── Toast ── */
+.gameToast {
+  position: absolute;
+  bottom: 130px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--brownDark);
+  color: #fffdf8;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 20px;
+  padding: 6px 16px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s, transform 0.25s;
+  z-index: 40;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px var(--shadowMd);
+}
+.gameToast.toastActive {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+#petAccessory {
+  position: absolute;
+  top: 50px;
+  left: 50%;
+  transform: translateX(-50%);
+  pointer-events: none;
+  font-size: 36px;
+  z-index: 10;
 }
