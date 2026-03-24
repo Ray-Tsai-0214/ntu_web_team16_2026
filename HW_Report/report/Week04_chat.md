@@ -91,3 +91,7 @@
 幫我在post介面新增案愛心跟收藏的符號，並且點擊會加一
 
 我想要每個markers對應的貼文都是獨立的
+
+# 周世恩
+
+[Gemini Chat Link](https://gemini.google.com/share/97315dff2180)
