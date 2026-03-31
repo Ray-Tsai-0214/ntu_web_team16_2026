@@ -7,19 +7,35 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const post = db.getPost(id);
+  const postId = parseInt(id, 10);
+  const post = db.getPost(postId);
   if (!post) {
     return NextResponse.json({ error: "Post not found" }, { status: 404 });
   }
+  const reactionCounts = db.getReactionCounts(postId);
+  return NextResponse.json({ post, reactions: reactionCounts });
+}
 
-  const reactions = db.getReactions(id);
-  const reactionCounts = {
-    hilarious: reactions.filter((r) => r.type === "hilarious").length,
-    wtf: reactions.filter((r) => r.type === "wtf").length,
-    nice: reactions.filter((r) => r.type === "nice").length,
-    doubt: reactions.filter((r) => r.type === "doubt").length,
-    boring: reactions.filter((r) => r.type === "boring").length,
-  };
+// PATCH /api/posts/:id — like 或 save toggle
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+  const postId = parseInt(id, 10);
+  const body = await request.json();
+  const { action } = body; // "like" or "save"
 
-  return NextResponse.json({ post, reactions: reactionCounts, totalReactions: reactions.length });
+  if (action === "like") {
+    const post = db.toggleLike(postId);
+    if (!post) return NextResponse.json({ error: "Post not found" }, { status: 404 });
+    return NextResponse.json(post);
+  }
+  if (action === "save") {
+    const post = db.toggleSave(postId);
+    if (!post) return NextResponse.json({ error: "Post not found" }, { status: 404 });
+    return NextResponse.json(post);
+  }
+
+  return NextResponse.json({ error: "Invalid action" }, { status: 400 });
 }

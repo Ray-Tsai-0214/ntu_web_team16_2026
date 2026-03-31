@@ -16,7 +16,6 @@ export default function Home() {
           <li><code>GET /api/landmarks</code> — 取得所有地標</li>
           <li><code>GET /api/landmarks?lat=25.017&amp;lng=121.539&amp;radius=200</code> — 附近查詢</li>
           <li><code>GET /api/landmarks/:id</code> — 取得地標 + 該地標貼文</li>
-          <li><code>POST /api/landmarks</code> — 新增地標</li>
         </ul>
       </section>
 

@@ -1,16 +1,16 @@
 // OMG (Odd Map Gossip) — 資料型別定義
-// 對應 OMG_blueprint.md 中的 Data Models
+// 對應前端 JS 的資料結構 + OMG_blueprint.md
 
 /** 反應類型（Threads 風格） */
 export type ReactionType = "hilarious" | "wtf" | "nice" | "doubt" | "boring";
 
-/** 反應權重對照 */
-export const REACTION_WEIGHTS: Record<ReactionType, number> = {
-  hilarious: 1.5, // 😂
-  wtf: 1.2,       // 🤯
-  nice: 1.0,      // 👍
-  doubt: 0,       // 🤔
-  boring: -1.0,   // 👎
+/** 反應 Emoji 對照 */
+export const REACTION_EMOJI: Record<ReactionType, string> = {
+  hilarious: "😂",
+  wtf: "🤯",
+  nice: "👍",
+  doubt: "🤔",
+  boring: "👎",
 };
 
 /** 貼文標籤 */
@@ -18,21 +18,19 @@ export type PostTag =
   | "funny" | "food" | "weird" | "animal"
   | "service" | "spooky" | "urban-legend" | "campus";
 
-/** 使用者等級門檻 */
-export const LEVEL_THRESHOLDS = [0, 51, 151, 301] as const;
-
-// ─── 資料模型 ───
+// ─── 資料模型（對齊前端 JS 格式） ───
 
 export interface User {
   id: string;
   displayName: string;
   avatarEmoji: string;
-  level: number;         // 1-4
+  level: number;
   totalPoints: number;
+  postCount: number;
+  reactionCount: number;
   dailyPostsUsed: number;
-  maxDailyPosts: number; // 2 (default) → 5 (unlocked)
-  streakDays: number;
-  joinedAt: string;      // ISO 8601
+  maxDailyPosts: number;
+  joinedAt: string;
 }
 
 export interface Landmark {
@@ -42,24 +40,25 @@ export interface Landmark {
   lat: number;
   lng: number;
   category: string;
-  createdAt: string;
 }
 
+/** 貼文 — 對齊前端 home.js 的 postsData 格式 */
 export interface Post {
-  id: string;
+  id: number;
   landmarkId: string;
   authorId: string;
-  content: string;
-  imageUrl: string | null;
+  coords: [number, number];  // [lng, lat] — Mapbox 格式
+  img: string;                // 圖片路徑
+  text: string;               // 貼文內容
+  date: string;               // 顯示用日期 "2023.10.27"
   tags: PostTag[];
-  createdAt: string;
-  heatScore: number;
+  likes: number;
+  saves: number;
 }
 
 export interface Reaction {
   id: string;
-  postId: string;
+  postId: number;
   userId: string;
   type: ReactionType;
-  createdAt: string;
 }

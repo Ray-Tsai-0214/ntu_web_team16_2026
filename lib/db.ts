@@ -1,68 +1,31 @@
-// In-memory 資料庫 + NTU 校園種子資料
-// 伺服器重啟後資料會重置，未來可替換為 Neon Postgres
+// In-memory 資料庫 + 種子資料
+// 資料格式對齊前端 JS，伺服器重啟後重置
 
-import { User, Landmark, Post, Reaction } from "./types";
+import { User, Landmark, Post, Reaction, PostTag, ReactionType } from "./types";
 
-// ─── 種子資料：5 個 NTU 校園地標 ───
+// ─── 種子地標 ───
 
 const seedLandmarks: Landmark[] = [
-  {
-    id: "lm-001",
-    name: "醉月湖",
-    description: "台大校園內的湖泊，傳說夜晚會有奇怪的聲音",
-    lat: 25.0183,
-    lng: 121.5365,
-    category: "nature",
-    createdAt: "2026-03-01T00:00:00Z",
-  },
-  {
-    id: "lm-002",
-    name: "椰林大道",
-    description: "台大最具代表性的道路，兩旁種滿椰子樹",
-    lat: 25.0174,
-    lng: 121.5398,
-    category: "landmark",
-    createdAt: "2026-03-01T00:00:00Z",
-  },
-  {
-    id: "lm-003",
-    name: "總圖書館",
-    description: "台大主要圖書館，期末考期間 24 小時開放",
-    lat: 25.0170,
-    lng: 121.5406,
-    category: "building",
-    createdAt: "2026-03-01T00:00:00Z",
-  },
-  {
-    id: "lm-004",
-    name: "小福樓",
-    description: "學生餐廳和便利商店集中地，午餐時間人潮洶湧",
-    lat: 25.0165,
-    lng: 121.5370,
-    category: "food",
-    createdAt: "2026-03-01T00:00:00Z",
-  },
-  {
-    id: "lm-005",
-    name: "舟山路",
-    description: "連接校園南北的道路，有很多流浪貓出沒",
-    lat: 25.0148,
-    lng: 121.5412,
-    category: "street",
-    createdAt: "2026-03-01T00:00:00Z",
-  },
+  { id: "lm-001", name: "醉月湖", description: "台大校園內的湖泊", lat: 25.0183, lng: 121.5365, category: "nature" },
+  { id: "lm-002", name: "椰林大道", description: "台大最具代表性的道路", lat: 25.0174, lng: 121.5398, category: "landmark" },
+  { id: "lm-003", name: "總圖書館", description: "台大主要圖書館", lat: 25.0170, lng: 121.5406, category: "building" },
+  { id: "lm-004", name: "小福樓", description: "學生餐廳集中地", lat: 25.0165, lng: 121.5370, category: "food" },
+  { id: "lm-005", name: "舟山路", description: "流浪貓出沒的道路", lat: 25.0148, lng: 121.5412, category: "street" },
 ];
+
+// ─── 種子使用者（對齊 profile.html） ───
 
 const seedUsers: User[] = [
   {
     id: "user-001",
-    displayName: "探險企鵝",
+    displayName: "StorySeeker99",
     avatarEmoji: "🐧",
-    level: 2,
-    totalPoints: 85,
-    dailyPostsUsed: 1,
+    level: 3,
+    totalPoints: 450,
+    postCount: 42,
+    reactionCount: 891,
+    dailyPostsUsed: 0,
     maxDailyPosts: 2,
-    streakDays: 5,
     joinedAt: "2026-03-01T00:00:00Z",
   },
   {
@@ -71,50 +34,28 @@ const seedUsers: User[] = [
     avatarEmoji: "🐱",
     level: 1,
     totalPoints: 30,
+    postCount: 5,
+    reactionCount: 12,
     dailyPostsUsed: 0,
     maxDailyPosts: 2,
-    streakDays: 2,
     joinedAt: "2026-03-05T00:00:00Z",
   },
 ];
 
+// ─── 種子貼文（對齊 home.js 的 postsData 格式） ───
+
 const seedPosts: Post[] = [
-  {
-    id: "post-001",
-    landmarkId: "lm-001",
-    authorId: "user-001",
-    content: "半夜經過醉月湖聽到怪聲，結果是青蛙在開演唱會 🐸🎤",
-    imageUrl: null,
-    tags: ["funny", "campus"],
-    createdAt: "2026-03-10T22:30:00Z",
-    heatScore: 8.5,
-  },
-  {
-    id: "post-002",
-    landmarkId: "lm-005",
-    authorId: "user-002",
-    content: "舟山路的橘貓今天居然讓我摸了！牠平常超兇的",
-    imageUrl: null,
-    tags: ["animal", "campus"],
-    createdAt: "2026-03-12T14:20:00Z",
-    heatScore: 12.3,
-  },
-  {
-    id: "post-003",
-    landmarkId: "lm-004",
-    authorId: "user-001",
-    content: "小福的雞排漲價了 5 塊，這是什麼通膨地獄",
-    imageUrl: null,
-    tags: ["food", "funny"],
-    createdAt: "2026-03-15T12:05:00Z",
-    heatScore: 5.2,
-  },
+  { id: 1, landmarkId: "lm-001", authorId: "user-001", coords: [121.564, 25.033], img: "assets/cat.jpg", text: "他不答應跟我交換身體，差評", date: "2023.10.27", tags: ["funny", "animal"], likes: 5, saves: 2 },
+  { id: 2, landmarkId: "lm-002", authorId: "user-002", coords: [121.550, 25.040], img: "assets/map.jpg", text: "是誰在這裡迷路了?是我", date: "2023.10.28", tags: ["funny", "campus"], likes: 12, saves: 8 },
+  { id: 3, landmarkId: "lm-004", authorId: "user-001", coords: [121.570, 25.050], img: "assets/eat.jpg", text: "沒有鳳梨，一點都不道地", date: "2023.10.29", tags: ["food", "weird"], likes: 20, saves: 1 },
 ];
 
+// ─── 種子反應（對齊 profile.html 的 reaction buttons） ───
+
 const seedReactions: Reaction[] = [
-  { id: "react-001", postId: "post-001", userId: "user-002", type: "hilarious", createdAt: "2026-03-10T23:00:00Z" },
-  { id: "react-002", postId: "post-002", userId: "user-001", type: "nice", createdAt: "2026-03-12T15:00:00Z" },
-  { id: "react-003", postId: "post-003", userId: "user-002", type: "wtf", createdAt: "2026-03-15T12:30:00Z" },
+  { id: "react-001", postId: 1, userId: "user-002", type: "hilarious" },
+  { id: "react-002", postId: 2, userId: "user-001", type: "nice" },
+  { id: "react-003", postId: 3, userId: "user-002", type: "wtf" },
 ];
 
 // ─── In-Memory Store ───
@@ -124,66 +65,89 @@ class Database {
   landmarks: Landmark[] = [...seedLandmarks];
   posts: Post[] = [...seedPosts];
   reactions: Reaction[] = [...seedReactions];
+  private postIdCounter = seedPosts.length;
 
-  private nextId(prefix: string, arr: { id: string }[]): string {
-    const num = arr.length + 1;
-    return `${prefix}-${String(num).padStart(3, "0")}`;
-  }
-
-  // Users
+  // ── Users ──
   getUsers() { return this.users; }
   getUser(id: string) { return this.users.find((u) => u.id === id); }
-  createUser(data: Omit<User, "id" | "joinedAt" | "level" | "totalPoints" | "dailyPostsUsed" | "maxDailyPosts" | "streakDays">) {
+  createUser(data: Pick<User, "displayName" | "avatarEmoji">) {
     const user: User = {
       ...data,
-      id: this.nextId("user", this.users),
+      id: `user-${String(this.users.length + 1).padStart(3, "0")}`,
       level: 1,
       totalPoints: 0,
+      postCount: 0,
+      reactionCount: 0,
       dailyPostsUsed: 0,
       maxDailyPosts: 2,
-      streakDays: 0,
       joinedAt: new Date().toISOString(),
     };
     this.users.push(user);
     return user;
   }
 
-  // Landmarks
+  // ── Landmarks ──
   getLandmarks() { return this.landmarks; }
   getLandmark(id: string) { return this.landmarks.find((l) => l.id === id); }
-  createLandmark(data: Omit<Landmark, "id" | "createdAt">) {
-    const landmark: Landmark = {
-      ...data,
-      id: this.nextId("lm", this.landmarks),
-      createdAt: new Date().toISOString(),
-    };
-    this.landmarks.push(landmark);
-    return landmark;
+
+  getNearbyLandmarks(lat: number, lng: number, radiusMeters: number = 200) {
+    return this.landmarks.filter((lm) => {
+      const dist = haversine(lat, lng, lm.lat, lm.lng);
+      return dist <= radiusMeters;
+    });
   }
 
-  // Posts
+  // ── Posts ──
   getPosts(landmarkId?: string) {
     if (landmarkId) return this.posts.filter((p) => p.landmarkId === landmarkId);
     return this.posts;
   }
-  getPost(id: string) { return this.posts.find((p) => p.id === id); }
-  createPost(data: Omit<Post, "id" | "createdAt" | "heatScore">) {
+  getPostsByAuthor(authorId: string) {
+    return this.posts.filter((p) => p.authorId === authorId);
+  }
+  getPost(id: number) { return this.posts.find((p) => p.id === id); }
+
+  createPost(data: { landmarkId: string; authorId: string; coords: [number, number]; img: string; text: string; tags: PostTag[] }) {
+    this.postIdCounter++;
+    const now = new Date();
     const post: Post = {
       ...data,
-      id: this.nextId("post", this.posts),
-      createdAt: new Date().toISOString(),
-      heatScore: 0,
+      id: this.postIdCounter,
+      date: `${now.getFullYear()}.${String(now.getMonth() + 1).padStart(2, "0")}.${String(now.getDate()).padStart(2, "0")}`,
+      likes: 0,
+      saves: 0,
     };
     this.posts.push(post);
+
+    // 更新作者統計
+    const author = this.getUser(data.authorId);
+    if (author) {
+      author.dailyPostsUsed += 1;
+      author.postCount += 1;
+      author.totalPoints += 2;
+    }
+
     return post;
   }
 
-  // Reactions
-  getReactions(postId: string) {
+  // ── Reactions ──
+  getReactions(postId: number) {
     return this.reactions.filter((r) => r.postId === postId);
   }
-  createReaction(data: Omit<Reaction, "id" | "createdAt">) {
-    // 同一使用者對同一貼文只能有一個反應
+
+  getReactionCounts(postId: number) {
+    const reactions = this.getReactions(postId);
+    return {
+      hilarious: reactions.filter((r) => r.type === "hilarious").length,
+      wtf: reactions.filter((r) => r.type === "wtf").length,
+      nice: reactions.filter((r) => r.type === "nice").length,
+      doubt: reactions.filter((r) => r.type === "doubt").length,
+      boring: reactions.filter((r) => r.type === "boring").length,
+    };
+  }
+
+  createReaction(data: { postId: number; userId: string; type: ReactionType }) {
+    // 同一使用者對同一貼文只能有一個反應（可更新）
     const existing = this.reactions.findIndex(
       (r) => r.postId === data.postId && r.userId === data.userId
     );
@@ -193,24 +157,37 @@ class Database {
     }
     const reaction: Reaction = {
       ...data,
-      id: this.nextId("react", this.reactions),
-      createdAt: new Date().toISOString(),
+      id: `react-${String(this.reactions.length + 1).padStart(3, "0")}`,
     };
     this.reactions.push(reaction);
+
+    // 更新貼文 likes（hilarious/wtf/nice = +1 like）
+    const post = this.getPost(data.postId);
+    if (post && ["hilarious", "wtf", "nice"].includes(data.type)) {
+      post.likes += 1;
+    }
+
     return reaction;
   }
 
-  // 附近地標查詢（Haversine 公式，單位：公尺）
-  getNearbyLandmarks(lat: number, lng: number, radiusMeters: number = 200) {
-    return this.landmarks.filter((lm) => {
-      const dist = haversine(lat, lng, lm.lat, lm.lng);
-      return dist <= radiusMeters;
-    });
+  // ── Like / Save toggle（對齊前端 home.js 的按鈕行為） ──
+  toggleLike(postId: number) {
+    const post = this.getPost(postId);
+    if (!post) return null;
+    post.likes += 1;
+    return post;
+  }
+
+  toggleSave(postId: number) {
+    const post = this.getPost(postId);
+    if (!post) return null;
+    post.saves += 1;
+    return post;
   }
 }
 
 function haversine(lat1: number, lng1: number, lat2: number, lng2: number): number {
-  const R = 6371e3; // 地球半徑（公尺）
+  const R = 6371e3;
   const toRad = (deg: number) => (deg * Math.PI) / 180;
   const dLat = toRad(lat2 - lat1);
   const dLng = toRad(lng2 - lng1);
@@ -220,5 +197,4 @@ function haversine(lat1: number, lng1: number, lat2: number, lng2: number): numb
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-// Singleton — 整個 server 共用同一個 instance
 export const db = new Database();

@@ -11,11 +11,11 @@ export async function GET(request: NextRequest) {
 // POST /api/posts — 新增貼文
 export async function POST(request: NextRequest) {
   const body = await request.json();
-  const { landmarkId, authorId, content, tags, imageUrl } = body;
+  const { landmarkId, authorId, coords, img, text, tags } = body;
 
-  if (!landmarkId || !authorId || !content) {
+  if (!landmarkId || !authorId || !text) {
     return NextResponse.json(
-      { error: "Missing required fields: landmarkId, authorId, content" },
+      { error: "Missing required fields: landmarkId, authorId, text" },
       { status: 400 }
     );
   }
@@ -36,17 +36,15 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  const landmark = db.getLandmark(landmarkId)!;
   const post = db.createPost({
     landmarkId,
     authorId,
-    content,
-    imageUrl: imageUrl ?? null,
+    coords: coords ?? [landmark.lng, landmark.lat],
+    img: img ?? "",
+    text,
     tags: tags ?? [],
   });
-
-  // 更新使用者每日發文數 & 加分
-  author.dailyPostsUsed += 1;
-  author.totalPoints += 2; // +2 for publishing
 
   return NextResponse.json(post, { status: 201 });
 }

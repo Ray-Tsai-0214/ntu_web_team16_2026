@@ -20,19 +20,3 @@ export async function GET(request: NextRequest) {
 
   return NextResponse.json(db.getLandmarks());
 }
-
-// POST /api/landmarks — 新增地標
-export async function POST(request: NextRequest) {
-  const body = await request.json();
-  const { name, description, lat, lng, category } = body;
-
-  if (!name || !description || lat == null || lng == null || !category) {
-    return NextResponse.json(
-      { error: "Missing required fields: name, description, lat, lng, category" },
-      { status: 400 }
-    );
-  }
-
-  const landmark = db.createLandmark({ name, description, lat, lng, category });
-  return NextResponse.json(landmark, { status: 201 });
-}
