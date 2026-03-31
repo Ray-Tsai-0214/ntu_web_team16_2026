@@ -1,0 +1,339 @@
+/* 配色變數 */
+:root {
+  --lightGreen: #d8d8a3;
+  --lightPeach: #ffe1c5;
+  --paleCream: #ffedcc;
+  --mutedBrown: #b29586;
+  --cardWhite: #ffffff;
+  --textDark: #5a4b43;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background-color: #e0e0e0; /* 模擬手機外背景 */
+    display: flex;
+    justify-content: center;
+    color: var(--textDark);
+}
+
+/* 手機容器 */
+.app-container {
+    width: 100%;
+    max-width: 480px;
+    height: 100vh;
+    background-color: var(--paleCream);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+/* 頂部 Header */
+.home-header {
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--paleCream);
+    z-index: 100; /* 高於遮罩 */
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.logo {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--mutedBrown);
+    letter-spacing: 1px;
+}
+
+/* 地圖容器範圍 */
+.map-container {
+    flex: 1;
+    position: relative;
+    background-color: var(--paleCream);
+    overflow: hidden;
+}
+
+/* 地圖背景圖 */
+.map-bg {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-image: url('../assets/map.jpg');
+    background-size: cover;
+    background-position: center;
+    z-index: 1;
+}
+
+/* 局部遮罩層 (關鍵：只在地圖範圍內) */
+.fab-overlay {
+    position: absolute; /* 相對於 map-container */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.3); /* 黑色透明壓低亮度 */
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    z-index: 50; /* 高於標記點，但低於功能鍵 */
+    backdrop-filter: blur(2px);
+}
+
+.fab-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* 紅色標記點樣式 */
+.map-marker {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    background-image: url('../assets/marker.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: bottom center;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    z-index: 10; /* 低於遮罩層 */
+    margin-left: -20px; /* 中心對齊調整 */
+    margin-top: -40px;
+}
+
+.map-marker.enlarge {
+    transform: scale(1.6);
+    filter: drop-shadow(0 5px 15px rgba(0,0,0,0.3));
+    z-index: 60; /* 放大時暫時高於遮罩 */
+}
+
+/* --- 底部功能鍵組樣式 --- */
+
+.fab-wrapper {
+    position: fixed;
+    bottom: 25px; /* 下移約 15px (原 40px) */
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px; /* 加大尺寸 */
+    height: 80px;
+    z-index: 1000; /* 最高層級，不被遮罩遮蔽 */
+}
+
+/* 主按鈕 */
+.fab-main {
+    width: 80px;
+    height: 80px;
+    background-color: var(--mutedBrown);
+    border: 4px solid #ffffff; /* 白色外框 */
+    border-radius: 50%;
+    color: var(--paleCream);
+    font-size: 32px;
+    cursor: pointer;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+    position: relative;
+    z-index: 10;
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+}
+
+/* 子功能按鈕樣式 */
+.fab-child {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    width: 65px; /* 加大尺寸 */
+    height: 65px;
+    background-color: var(--cardWhite);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--mutedBrown);
+    font-size: 24px;
+    border: 2px solid var(--lightGreen);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    opacity: 0;
+    transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    z-index: 5;
+    pointer-events: none;
+    text-decoration: none;
+}
+
+/* 展開狀態效果 */
+.fab-wrapper.active .fab-main {
+    transform: rotate(135deg);
+    background-color: var(--textDark);
+}
+
+.fab-wrapper.active .fab-child {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* 子按鈕飛行座標 */
+.fab-wrapper.active .fab-child:nth-child(1) {
+    transform: translate(-95px, -65px); /* Profile */
+}
+.fab-wrapper.active .fab-child:nth-child(2) {
+    transform: translate(0px, -115px);  /* Upload */
+}
+.fab-wrapper.active .fab-child:nth-child(3) {
+    transform: translate(95px, -65px);  /* Pet */
+}
+
+
+/* 按鈕點擊微反饋 */
+.fab-child:active {
+    background-color: var(--lightPeach);
+    filter: brightness(0.9);
+}
+
+/* --- 拍立得貼文彈窗 --- */
+.post-modal {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(90, 75, 67, 0.6); /* 使用 mutedBrown 的深色版做背景 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 200; /* 高於遮罩與標記 */
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(4px);
+}
+
+.post-modal.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* 拍立得卡片主體 */
+.polaroid-card {
+    width: 85%;
+    max-width: 320px;
+    background-color: #ffffff;
+    padding: 15px 15px 30px 15px; /* 拍立得下方留白較多 */
+    box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+    transform: translateY(20px) rotate(-2deg); /* 預設一點點傾斜感 */
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    position: relative;
+}
+
+.post-modal.show .polaroid-card {
+    transform: translateY(0) rotate(0deg);
+}
+
+/* 關閉按鈕 */
+.close-modal {
+    position: absolute;
+    top: -15px;
+    right: -15px;
+    width: 35px;
+    height: 35px;
+    background: var(--mutedBrown);
+    color: white;
+    border: 3px solid white;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    z-index: 10;
+}
+
+/* 拍立得圖片區 */
+.polaroid-image {
+    width: 100%;
+    aspect-ratio: 1 / 1; /* 強制正方形 */
+    background-color: #eee;
+    overflow: hidden;
+    border: 1px solid #ddd;
+}
+
+.polaroid-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* 拍立得文字區 */
+.polaroid-content {
+    padding-top: 20px;
+    text-align: left;
+}
+
+.polaroid-content p {
+    font-size: 1rem;
+    color: #444;
+    line-height: 1.4;
+    margin-bottom: 10px;
+    /* 如果想要更像手寫，可以換成手寫體字型 */
+    font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+}
+
+.post-date {
+    font-size: 0.75rem;
+    color: #999;
+    display: block;
+    text-align: right;
+}
+
+/* --- 拍立得動作按鈕 --- */
+.polaroid-actions {
+    display: flex;
+    gap: 20px;
+    margin: 15px 0;
+    padding-top: 10px;
+    border-top: 1px dashed #eee; /* 增加一條虛線區隔文字 */
+}
+
+.action-item {
+    background: none;
+    border: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--mutedBrown);
+    cursor: pointer;
+    font-size: 1.1rem;
+    transition: all 0.2s ease;
+    padding: 5px 0;
+}
+
+.action-item i {
+    font-size: 1.2rem;
+}
+
+/* 點擊後的活躍狀態 */
+.action-item.active.like-active {
+    color: #ff4757; /* 愛心變紅 */
+}
+
+.action-item.active.save-active {
+    color: #ffa502; /* 收藏變橘黃 */
+}
+
+.action-item .count {
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+/* 點擊時的微縮放動畫 */
+.action-item:active {
+    transform: scale(1.2);
+}

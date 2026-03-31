@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OMG - User Profile</title>
+  <link rel="stylesheet" href="css/profile.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+  <main class="app-container">
+    
+    <header class="profile-header">
+      <div class="header-top">
+        <a href="home.html" class="back-btn" aria-label="Go back">
+          <i class="fa-solid fa-chevron-left"></i>
+        </a>
+      </div>
+      <div class="header-main">
+        <div class="pet-avatar-container">
+          <div class="pet-avatar">🐧</div>
+        </div>
+        <div class="user-info">
+          <h1 class="username">StorySeeker99</h1>
+          <p class="user-id">ID: OMG-8472</p>
+          <span class="level-badge"><i class="fa-solid fa-star"></i> Lv.3 Anecdote Hunter</span>
+        </div>
+      </div>
+    </header>
+
+    <section class="stats-row">
+      <div class="stat-item">
+        <span class="stat-value">450</span>
+        <span class="stat-label">Points</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-value">42</span>
+        <span class="stat-label">Posts</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-value">891</span>
+        <span class="stat-label">Reactions</span>
+      </div>
+    </section>
+
+    <div class="tab-container">
+      <button class="tab-btn active">My Posts</button>
+      <button class="tab-btn">Saved</button>
+    </div>
+
+    <section class="post-feed">
+      
+      <article class="post-card">
+        <div class="post-header">
+          <div class="author-avatar">👤</div>
+          <div class="author-info">
+            <span class="author-name">StorySeeker99 <span class="author-level">Lv.3</span></span>
+            <span class="post-time">2h ago</span>
+          </div>
+        </div>
+        
+        <p class="post-content">
+          Saw someone walking a pet duck on a leash near the library today. The duck was wearing tiny red boots. I repeat, TINY RED BOOTS. 🦆👢
+        </p>
+        
+        <div class="post-tags">
+          <span class="tag">#animal</span>
+          <span class="tag">#weird</span>
+        </div>
+        
+        <div class="post-reactions">
+          <button class="reaction-btn active">😂 <span>45</span></button>
+          <button class="reaction-btn">🤯 <span>12</span></button>
+          <button class="reaction-btn">👍 <span>8</span></button>
+          <button class="reaction-btn">🤔 <span>0</span></button>
+          <button class="reaction-btn">👎 <span>0</span></button>
+        </div>
+        
+        <div class="post-actions">
+          <button class="reply-btn"><i class="fa-regular fa-comment"></i> Reply (5)</button>
+        </div>
+      </article>
+
+      <article class="post-card">
+        <div class="post-header">
+          <div class="author-avatar">👤</div>
+          <div class="author-info">
+            <span class="author-name">StorySeeker99 <span class="author-level">Lv.3</span></span>
+            <span class="post-time">1d ago</span>
+          </div>
+        </div>
+        
+        <p class="post-content">
+          The bubble tea shop on the corner is secretly giving extra pearls if you whisper "the penguins are marching" when you order. Tested and confirmed.
+        </p>
+        
+        <div class="post-tags">
+          <span class="tag">#food</span>
+          <span class="tag">#urban-legend</span>
+        </div>
+        
+        <div class="post-reactions">
+          <button class="reaction-btn">😂 <span>5</span></button>
+          <button class="reaction-btn active">🤯 <span>34</span></button>
+          <button class="reaction-btn active">👍 <span>120</span></button>
+          <button class="reaction-btn">🤔 <span>2</span></button>
+          <button class="reaction-btn">👎 <span>1</span></button>
+        </div>
+        
+        <div class="post-actions">
+          <button class="reply-btn"><i class="fa-regular fa-comment"></i> Reply (14)</button>
+        </div>
+      </article>
+
+    </section>
+
+  </main>
+
+  <script src="js/profile.js"></script>
+</body>
+</html>
