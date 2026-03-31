@@ -56,7 +56,6 @@ body {
 .map-container {
     flex: 1;
     position: relative;
-    background-color: var(--paleCream);
     overflow: hidden;
 }
 
@@ -93,18 +92,18 @@ body {
 
 /* 紅色標記點樣式 */
 .map-marker {
-    position: absolute;
     width: 40px;
     height: 40px;
-    background-image: url('../assets/marker.png');
+    background-image: url('../assets/marker.png'); /* 你的紅色標記圖片 */
     background-size: contain;
     background-repeat: no-repeat;
     background-position: bottom center;
     cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    z-index: 10; /* 低於遮罩層 */
-    margin-left: -20px; /* 中心對齊調整 */
-    margin-top: -40px;
+    /* Mapbox 會處理定位，所以我們只需要給它 transition 和基準點 */
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.map-marker:hover {
+    transform: scale(1.2) translateY(-5px);
 }
 
 .map-marker.enlarge {

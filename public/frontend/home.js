@@ -1,72 +1,5 @@
-<!DOCTYPE html>
-<html lang="zh-TW">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OMG - Mapbox Home</title>
-
-    <!-- Mapbox GL JS -->
-    <link href="https://api.mapbox.com/mapbox-gl-js/v3.20.0/mapbox-gl.css" rel="stylesheet">
-    <script src="https://api.mapbox.com/mapbox-gl-js/v3.20.0/mapbox-gl.js"></script>
-
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="css/home.css">
-</head>
-
-<body>
-
-    <main class="app-container">
-        <!-- 頂部標題欄 -->
-        <header class="home-header">
-            <div class="logo">OMG</div>
-            <div class="user-status"><i class="fa-solid fa-bell"></i></div>
-        </header>
-
-        <!-- 地圖區域：裡面只放地圖 -->
-        <div class="map-container">
-            <div id="map" style="width: 100%; height: 100%;"></div>
-        </div>
-
-        <!-- 修正點 1：將遮罩與彈窗移到地圖外面，避免事件被地圖攔截 -->
-        <div class="fab-overlay" id="fabOverlay"></div>
-
-        <div class="post-modal" id="postModal">
-            <div class="polaroid-card">
-                <button class="close-modal" id="closeModal" type="button">&times;</button>
-                <div class="polaroid-image">
-                    <img src="" id="modalImage" alt="Post Image">
-                </div>
-                <div class="polaroid-content">
-                    <p id="modalText"></p>
-                    <div class="polaroid-actions">
-                        <button class="action-item" id="likeBtn" type="button">
-                            <i class="fa-regular fa-heart"></i>
-                            <span class="count">0</span>
-                        </button>
-                        <button class="action-item" id="saveBtn" type="button">
-                            <i class="fa-regular fa-bookmark"></i>
-                            <span class="count">0</span>
-                        </button>
-                    </div>
-                    <span class="post-date"></span>
-                </div>
-            </div>
-        </div>
-
-        <!-- 底部功能鍵組 -->
-        <div class="fab-wrapper" id="fabWrapper">
-            <a href="profile.html" class="fab-child"><i class="fa-solid fa-user"></i></a>
-            <a href="upload.html" class="fab-child"><i class="fa-solid fa-camera"></i></a>
-            <a href="pet.html" class="fab-child"><i class="fa-solid fa-paw"></i></a>
-            <button class="fab-main" id="fabToggle"><i class="fa-solid fa-plus"></i></button>
-        </div>
-    </main>
-
-    <script>
-        // 1. 初始化 Mapbox
+// 1. 初始化 Mapbox
         mapboxgl.accessToken = 'pk.eyJ1Ijoib3JhbmdlaGVhcnQiLCJhIjoiY21uZWJkZzJqMW93ZDJ3cHJrZTlpNWo3dCJ9.ECWy4Lc3ZCMWlc5qZPFobQ';
-
         const map = new mapboxgl.Map({
             container: 'map',
             style: 'mapbox://styles/orangeheart/cmnebww4a002701sg3ebs7gm6',
@@ -199,7 +132,3 @@
                 document.querySelectorAll('.map-marker').forEach(m => m.classList.remove('enlarge'));
             }
         });
-    </script>
-</body>
-
-</html>
