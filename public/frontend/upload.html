@@ -23,16 +23,31 @@
       </div>
     </header>
 
-    <section class="hero-card">
+    <section class="hero-card" id="locationCard">
       <div class="hero-copy">
-        <span class="section-kicker">Current landmark</span>
-        <h2>NTU Main Library</h2>
-        <p>Auto-detected within 200m. Lv.4 users can create a new spot if needed.</p>
+        <span class="section-kicker" id="locationStatus">
+          <i class="fa-solid fa-spinner fa-spin"></i> Detecting location...
+        </span>
+        <h2 id="selectedLandmarkName">Locating...</h2>
+        <p id="selectedLandmarkDesc">Searching for landmarks within 500m of you.</p>
       </div>
-      <button class="secondary-btn" type="button">
+      <button class="secondary-btn" type="button" id="toggleLandmarkPicker">
         <i class="fa-solid fa-location-dot"></i>
         Change spot
       </button>
+    </section>
+
+    <!-- 地標選擇器（IG 風格） -->
+    <section class="landmark-picker" id="landmarkPicker" style="display:none;">
+      <div class="picker-header">
+        <p class="field-label">Nearby Landmarks</p>
+        <button class="picker-close" id="closePicker" type="button">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="landmark-list" id="landmarkList">
+        <p class="panel-note">Loading nearby landmarks...</p>
+      </div>
     </section>
 
     <section class="editor-card">
@@ -126,7 +141,132 @@
 
   <script src="js/api.js"></script>
   <script>
-    // --- Character counter ---
+    // ═══ 地標選擇狀態 ═══
+    let selectedLandmark = null;  // { id, name, lat, lng, distance, ... }
+    let userCoords = null;        // { lat, lng }
+
+    const CATEGORY_ICONS = {
+      nature: 'fa-tree', building: 'fa-building', landmark: 'fa-monument',
+      food: 'fa-utensils', street: 'fa-road', default: 'fa-location-dot'
+    };
+
+    // ═══ Geolocation + 附近地標偵測 ═══
+    async function detectLocation() {
+      const statusEl = document.getElementById('locationStatus');
+      const nameEl = document.getElementById('selectedLandmarkName');
+      const descEl = document.getElementById('selectedLandmarkDesc');
+
+      if (!navigator.geolocation) {
+        statusEl.innerHTML = '<i class="fa-solid fa-xmark"></i> Geolocation not supported';
+        nameEl.textContent = 'Select manually';
+        descEl.textContent = 'Your browser does not support geolocation.';
+        await loadAllLandmarks();
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        async (pos) => {
+          userCoords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+          statusEl.innerHTML = '<i class="fa-solid fa-check"></i> Location detected';
+          descEl.textContent = `${userCoords.lat.toFixed(4)}, ${userCoords.lng.toFixed(4)}`;
+
+          // 從 API 拿 500m 內的地標
+          try {
+            const nearby = await fetchAPI(
+              `/api/landmarks?lat=${userCoords.lat}&lng=${userCoords.lng}&radius=500`
+            );
+            renderLandmarkList(nearby);
+
+            if (nearby.length > 0) {
+              selectLandmark(nearby[0]); // 預設選最近的
+            } else {
+              nameEl.textContent = 'No landmarks nearby';
+              descEl.textContent = 'Try a different location or browse all landmarks.';
+              await loadAllLandmarks();
+            }
+          } catch (err) {
+            console.error('Failed to fetch nearby landmarks:', err);
+            await loadAllLandmarks();
+          }
+        },
+        async (err) => {
+          console.warn('Geolocation error:', err.message);
+          statusEl.innerHTML = '<i class="fa-solid fa-location-crosshairs"></i> Location unavailable';
+          nameEl.textContent = 'Select a landmark';
+          descEl.textContent = 'Pick from the list below.';
+          await loadAllLandmarks();
+        },
+        { enableHighAccuracy: true, timeout: 8000 }
+      );
+    }
+
+    async function loadAllLandmarks() {
+      try {
+        const all = await fetchAPI('/api/landmarks');
+        // 加上假距離供顯示
+        const withDist = all.map(lm => ({ ...lm, distance: null }));
+        renderLandmarkList(withDist);
+        if (!selectedLandmark && withDist.length > 0) {
+          selectLandmark(withDist[0]);
+        }
+      } catch (err) {
+        console.error('Failed to load landmarks:', err);
+      }
+    }
+
+    function renderLandmarkList(landmarks) {
+      const listEl = document.getElementById('landmarkList');
+      if (landmarks.length === 0) {
+        listEl.innerHTML = '<p class="panel-note">No landmarks found.</p>';
+        return;
+      }
+      listEl.innerHTML = landmarks.map(lm => `
+        <div class="landmark-item" data-id="${lm.id}" data-lat="${lm.lat}" data-lng="${lm.lng}" data-name="${lm.name}">
+          <div class="landmark-icon">
+            <i class="fa-solid ${CATEGORY_ICONS[lm.category] || CATEGORY_ICONS.default}"></i>
+          </div>
+          <div class="landmark-info">
+            <div class="landmark-name">${lm.name}</div>
+            <div class="landmark-dist">${lm.distance != null ? Math.round(lm.distance) + 'm away' : lm.description || ''}</div>
+          </div>
+          <div class="landmark-check"><i class="fa-solid fa-check"></i></div>
+        </div>
+      `).join('');
+
+      // 綁定點擊事件
+      listEl.querySelectorAll('.landmark-item').forEach(item => {
+        item.addEventListener('click', () => {
+          const lm = landmarks.find(l => l.id === item.dataset.id);
+          if (lm) selectLandmark(lm);
+        });
+      });
+    }
+
+    function selectLandmark(lm) {
+      selectedLandmark = lm;
+      document.getElementById('selectedLandmarkName').textContent = lm.name;
+      document.getElementById('selectedLandmarkDesc').textContent =
+        lm.distance != null ? `${Math.round(lm.distance)}m away` : (lm.description || '');
+
+      // 更新 picker 中的 selected 狀態
+      document.querySelectorAll('.landmark-item').forEach(item => {
+        item.classList.toggle('selected', item.dataset.id === lm.id);
+      });
+    }
+
+    // ═══ 地標選擇器 toggle ═══
+    const picker = document.getElementById('landmarkPicker');
+    document.getElementById('toggleLandmarkPicker').addEventListener('click', () => {
+      picker.style.display = picker.style.display === 'none' ? 'block' : 'none';
+    });
+    document.getElementById('closePicker').addEventListener('click', () => {
+      picker.style.display = 'none';
+    });
+
+    // ═══ 頁面載入時偵測位置 ═══
+    detectLocation();
+
+    // ═══ Character counter ═══
     const storyInput = document.getElementById('story-input');
     const charCounter = document.querySelector('.char-counter');
     const MAX_CHARS = 300;
@@ -138,14 +278,12 @@
       charCounter.classList.toggle('near-limit', len >= 250 && len < MAX_CHARS);
     });
 
-    // --- Tag toggle ---
+    // ═══ Tag toggle ═══
     document.querySelectorAll('.tag-chip').forEach(chip => {
-      chip.addEventListener('click', () => {
-        chip.classList.toggle('active');
-      });
+      chip.addEventListener('click', () => chip.classList.toggle('active'));
     });
 
-    // --- Image upload & drag-and-drop ---
+    // ═══ Image upload & drag-and-drop ═══
     const dropzone = document.getElementById('dropzone');
     const mediaInput = document.getElementById('media-input');
     const imagePreview = document.getElementById('image-preview');
@@ -179,27 +317,18 @@
       statusPill.classList.remove('has-image');
     });
 
-    // Drag-and-drop
     ['dragenter', 'dragover'].forEach(evt => {
-      dropzone.addEventListener(evt, (e) => {
-        e.preventDefault();
-        dropzone.classList.add('drag-over');
-      });
+      dropzone.addEventListener(evt, (e) => { e.preventDefault(); dropzone.classList.add('drag-over'); });
     });
-
     ['dragleave', 'drop'].forEach(evt => {
-      dropzone.addEventListener(evt, (e) => {
-        e.preventDefault();
-        dropzone.classList.remove('drag-over');
-      });
+      dropzone.addEventListener(evt, (e) => { e.preventDefault(); dropzone.classList.remove('drag-over'); });
     });
-
     dropzone.addEventListener('drop', (e) => {
       const file = e.dataTransfer.files[0];
       if (file) showPreview(file);
     });
 
-    // --- Toast notification ---
+    // ═══ Toast ═══
     function showToast(message, type = 'success') {
       const toast = document.getElementById('toast');
       toast.textContent = message;
@@ -207,16 +336,12 @@
       setTimeout(() => toast.classList.remove('show'), 2500);
     }
 
-    // --- Back button ---
+    // ═══ Back button ═══
     document.querySelector('.icon-btn').addEventListener('click', () => {
-      if (document.referrer) {
-        history.back();
-      } else {
-        window.location.href = 'home.html';
-      }
+      if (document.referrer) { history.back(); } else { window.location.href = 'home.html'; }
     });
 
-    // --- Save draft ---
+    // ═══ Save draft ═══
     document.querySelector('.ghost-btn').addEventListener('click', () => {
       const draft = {
         story: storyInput.value,
@@ -226,7 +351,7 @@
       showToast('Draft saved!');
     });
 
-    // --- Load draft on page load ---
+    // ═══ Load draft ═══
     (function loadDraft() {
       const saved = localStorage.getItem('upload_draft');
       if (!saved) return;
@@ -242,11 +367,16 @@
       }
     })();
 
-    // --- Publish — POST 到 API ---
+    // ═══ Publish — 使用選中的地標座標 POST 到 API ═══
     document.querySelector('.submit-btn').addEventListener('click', async () => {
       const story = storyInput.value.trim();
       const activeTags = document.querySelectorAll('.tag-chip.active');
 
+      if (!selectedLandmark) {
+        showToast('Please select a landmark first!', 'error');
+        document.getElementById('landmarkPicker').style.display = 'block';
+        return;
+      }
       if (!story) {
         showToast('Please write your story first!', 'error');
         storyInput.focus();
@@ -263,17 +393,18 @@
         const newPost = await fetchAPI('/api/posts', {
           method: 'POST',
           body: JSON.stringify({
-            landmarkId: 'lm-003',           // 目前預設 NTU Main Library
+            landmarkId: selectedLandmark.id,
             authorId: CURRENT_USER_ID,
-            coords: [121.5406, 25.0170],    // 總圖書館座標
+            coords: [selectedLandmark.lng, selectedLandmark.lat],
             img: '',
             text: story,
             tags: tags,
           }),
         });
-        showToast(`Story published! (post #${newPost.id})`);
+        showToast(`Published at ${selectedLandmark.name}! (post #${newPost.id})`);
         localStorage.removeItem('upload_draft');
         storyInput.value = '';
+        charCounter.textContent = '0 / 300';
         document.querySelectorAll('.tag-chip').forEach(c => c.classList.remove('active'));
       } catch (err) {
         showToast(`Publish failed: ${err.message}`, 'error');

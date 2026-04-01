@@ -569,6 +569,123 @@ body {
   background: #a03030;
 }
 
+/* --- Landmark picker (IG-style) --- */
+.landmark-picker {
+  margin: 0 16px 16px;
+  background: var(--cardWhite);
+  border-radius: var(--borderRadiusCard);
+  box-shadow: 0 10px 30px rgba(178, 149, 134, 0.08);
+  padding: 18px;
+  animation: slideDown 0.2s ease;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.picker-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.picker-close {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 50%;
+  background: var(--bgLight);
+  color: var(--textLight);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.picker-close:hover {
+  background: var(--lightPeach);
+  color: var(--mutedBrown);
+}
+
+.landmark-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.landmark-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1.5px solid transparent;
+  background: var(--bgLight);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.landmark-item:hover {
+  background: var(--lightPeach);
+  border-color: var(--mutedBrown);
+}
+
+.landmark-item.selected {
+  background: var(--lightPeach);
+  border-color: var(--mutedBrown);
+  box-shadow: 0 2px 8px rgba(178, 149, 134, 0.15);
+}
+
+.landmark-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  background: linear-gradient(to bottom right, var(--lightPeach), var(--paleCream));
+  color: var(--mutedBrown);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+.landmark-item.selected .landmark-icon {
+  background: var(--mutedBrown);
+  color: var(--cardWhite);
+}
+
+.landmark-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.landmark-name {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--textDark);
+}
+
+.landmark-dist {
+  font-size: 0.78rem;
+  color: var(--textLight);
+  margin-top: 2px;
+}
+
+.landmark-check {
+  color: var(--mutedBrown);
+  font-size: 0.85rem;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.landmark-item.selected .landmark-check {
+  opacity: 1;
+}
+
 @media (max-width: 520px) {
   body {
     padding: 0;
