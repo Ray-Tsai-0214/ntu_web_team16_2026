@@ -74,6 +74,15 @@ class Database {
   getLandmarks() { return this.landmarks; }
   getLandmark(id: string) { return this.landmarks.find((l) => l.id === id); }
 
+  createLandmark(data: Omit<Landmark, "id">) {
+    const landmark: Landmark = {
+      ...data,
+      id: `lm-${String(this.landmarks.length + 1).padStart(3, "0")}`,
+    };
+    this.landmarks.push(landmark);
+    return landmark;
+  }
+
   getNearbyLandmarks(lat: number, lng: number, radiusMeters: number = 200) {
     return this.landmarks
       .map((lm) => ({ ...lm, distance: haversine(lat, lng, lm.lat, lm.lng) }))

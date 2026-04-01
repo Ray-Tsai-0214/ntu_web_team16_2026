@@ -9,19 +9,25 @@ export async function GET(request: NextRequest) {
 }
 
 // POST /api/posts — 新增貼文
+// 接受兩種模式：
+//   1. landmarkId — 使用現有地標
+//   2. landmarkName + coords — 自動建立新地標（來自 Mapbox 真實 POI）
 export async function POST(request: NextRequest) {
   const body = await request.json();
-  const { landmarkId, authorId, coords, img, text, tags } = body;
+  const { landmarkId, landmarkName, authorId, coords, img, text, tags } = body;
 
-  if (!landmarkId || !authorId || !text) {
+  if (!authorId || !text) {
     return NextResponse.json(
-      { error: "Missing required fields: landmarkId, authorId, text" },
+      { error: "Missing required fields: authorId, text" },
       { status: 400 }
     );
   }
 
-  if (!db.getLandmark(landmarkId)) {
-    return NextResponse.json({ error: "Landmark not found" }, { status: 404 });
+  if (!coords || !Array.isArray(coords) || coords.length !== 2) {
+    return NextResponse.json(
+      { error: "Missing or invalid coords: [lng, lat]" },
+      { status: 400 }
+    );
   }
 
   const author = db.getUser(authorId);
@@ -36,11 +42,40 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const landmark = db.getLandmark(landmarkId)!;
+  // 決定 landmarkId：使用現有的，或從 Mapbox POI 名稱自動建立
+  let resolvedLandmarkId = landmarkId;
+
+  if (!resolvedLandmarkId && landmarkName) {
+    // 檢查是否已存在同名地標（避免重複）
+    const existing = db.getLandmarks().find(
+      (lm) => lm.name === landmarkName
+    );
+    if (existing) {
+      resolvedLandmarkId = existing.id;
+    } else {
+      // 自動建立新地標
+      const newLandmark = db.createLandmark({
+        name: landmarkName,
+        description: "",
+        lat: coords[1],  // coords 是 [lng, lat]
+        lng: coords[0],
+        category: "poi",
+      });
+      resolvedLandmarkId = newLandmark.id;
+    }
+  }
+
+  if (!resolvedLandmarkId) {
+    return NextResponse.json(
+      { error: "Must provide landmarkId or landmarkName" },
+      { status: 400 }
+    );
+  }
+
   const post = db.createPost({
-    landmarkId,
+    landmarkId: resolvedLandmarkId,
     authorId,
-    coords: coords ?? [landmark.lng, landmark.lat],
+    coords: coords as [number, number],
     img: img ?? "",
     text,
     tags: tags ?? [],

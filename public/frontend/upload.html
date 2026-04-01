@@ -141,16 +141,67 @@
 
   <script src="js/api.js"></script>
   <script>
+    // ═══ Mapbox token（與 home.html 共用） ═══
+    const MAPBOX_TOKEN = 'pk.eyJ1Ijoib3JhbmdlaGVhcnQiLCJhIjoiY21uZWJkZzJqMW93ZDJ3cHJrZTlpNWo3dCJ9.ECWy4Lc3ZCMWlc5qZPFobQ';
+    const SEARCH_RADIUS = 100; // 方圓 100 公尺
+
     // ═══ 地標選擇狀態 ═══
-    let selectedLandmark = null;  // { id, name, lat, lng, distance, ... }
-    let userCoords = null;        // { lat, lng }
+    let selectedLandmark = null; // { name, lat, lng, distance, category, address }
+    let userCoords = null;
+    let nearbyPlaces = [];
 
-    const CATEGORY_ICONS = {
-      nature: 'fa-tree', building: 'fa-building', landmark: 'fa-monument',
-      food: 'fa-utensils', street: 'fa-road', default: 'fa-location-dot'
-    };
+    // Haversine 距離計算（公尺）
+    function haversineDistance(lat1, lng1, lat2, lng2) {
+      const R = 6371e3;
+      const toRad = d => d * Math.PI / 180;
+      const dLat = toRad(lat2 - lat1);
+      const dLng = toRad(lng2 - lng1);
+      const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng/2)**2;
+      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    }
 
-    // ═══ Geolocation + 附近地標偵測 ═══
+    // Mapbox category → icon
+    function categoryIcon(categories) {
+      if (!categories || !categories.length) return 'fa-location-dot';
+      const cat = categories[0].toLowerCase();
+      if (cat.includes('food') || cat.includes('restaurant') || cat.includes('cafe') || cat.includes('coffee')) return 'fa-utensils';
+      if (cat.includes('shop') || cat.includes('store') || cat.includes('market')) return 'fa-store';
+      if (cat.includes('school') || cat.includes('university') || cat.includes('education')) return 'fa-graduation-cap';
+      if (cat.includes('park') || cat.includes('garden') || cat.includes('nature')) return 'fa-tree';
+      if (cat.includes('transport') || cat.includes('station') || cat.includes('bus')) return 'fa-train-subway';
+      if (cat.includes('hotel') || cat.includes('lodging')) return 'fa-hotel';
+      if (cat.includes('medical') || cat.includes('hospital')) return 'fa-hospital';
+      if (cat.includes('sport') || cat.includes('gym')) return 'fa-dumbbell';
+      return 'fa-building';
+    }
+
+    // ═══ 用 Mapbox Geocoding API 搜尋真實附近地標 ═══
+    async function searchNearbyPlaces(lat, lng, radius) {
+      const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json`
+        + `?types=poi&limit=10&language=zh-TW&access_token=${MAPBOX_TOKEN}`;
+
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('Mapbox API error');
+      const data = await res.json();
+
+      // 計算距離並篩選在 radius 內的 POI
+      const places = data.features
+        .map(f => ({
+          name: f.text,
+          fullName: f.place_name,
+          lat: f.center[1],
+          lng: f.center[0],
+          distance: haversineDistance(lat, lng, f.center[1], f.center[0]),
+          category: f.properties.category ? f.properties.category.split(',').map(c => c.trim()) : [],
+          address: f.properties.address || '',
+        }))
+        .filter(p => p.distance <= radius)
+        .sort((a, b) => a.distance - b.distance);
+
+      return places;
+    }
+
+    // ═══ Geolocation 偵測 + 搜尋附近 POI ═══
     async function detectLocation() {
       const statusEl = document.getElementById('locationStatus');
       const nameEl = document.getElementById('selectedLandmarkName');
@@ -158,9 +209,8 @@
 
       if (!navigator.geolocation) {
         statusEl.innerHTML = '<i class="fa-solid fa-xmark"></i> Geolocation not supported';
-        nameEl.textContent = 'Select manually';
+        nameEl.textContent = 'Cannot detect location';
         descEl.textContent = 'Your browser does not support geolocation.';
-        await loadAllLandmarks();
         return;
       }
 
@@ -168,90 +218,92 @@
         async (pos) => {
           userCoords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
           statusEl.innerHTML = '<i class="fa-solid fa-check"></i> Location detected';
-          descEl.textContent = `${userCoords.lat.toFixed(4)}, ${userCoords.lng.toFixed(4)}`;
 
-          // 從 API 拿 500m 內的地標
           try {
-            const nearby = await fetchAPI(
-              `/api/landmarks?lat=${userCoords.lat}&lng=${userCoords.lng}&radius=500`
-            );
-            renderLandmarkList(nearby);
+            // 搜尋 100m 內的真實地標
+            nearbyPlaces = await searchNearbyPlaces(userCoords.lat, userCoords.lng, SEARCH_RADIUS);
 
-            if (nearby.length > 0) {
-              selectLandmark(nearby[0]); // 預設選最近的
+            if (nearbyPlaces.length > 0) {
+              renderLandmarkList(nearbyPlaces);
+              selectLandmark(nearbyPlaces[0]);
             } else {
-              nameEl.textContent = 'No landmarks nearby';
-              descEl.textContent = 'Try a different location or browse all landmarks.';
-              await loadAllLandmarks();
+              // 100m 內沒有 → 擴大到 300m 再試
+              nearbyPlaces = await searchNearbyPlaces(userCoords.lat, userCoords.lng, 300);
+              if (nearbyPlaces.length > 0) {
+                renderLandmarkList(nearbyPlaces);
+                selectLandmark(nearbyPlaces[0]);
+                descEl.textContent = `No places within ${SEARCH_RADIUS}m — showing up to 300m.`;
+              } else {
+                // 還是沒有 → 用當前座標作為自訂地點
+                nameEl.textContent = 'Current Location';
+                descEl.textContent = `${userCoords.lat.toFixed(5)}, ${userCoords.lng.toFixed(5)}`;
+                selectedLandmark = {
+                  name: 'Current Location',
+                  lat: userCoords.lat,
+                  lng: userCoords.lng,
+                  distance: 0,
+                  category: [],
+                  address: '',
+                };
+                renderLandmarkList([]);
+              }
             }
           } catch (err) {
-            console.error('Failed to fetch nearby landmarks:', err);
-            await loadAllLandmarks();
+            console.error('Mapbox search failed:', err);
+            nameEl.textContent = 'Search failed';
+            descEl.textContent = 'Could not search for nearby places.';
           }
         },
-        async (err) => {
+        (err) => {
           console.warn('Geolocation error:', err.message);
           statusEl.innerHTML = '<i class="fa-solid fa-location-crosshairs"></i> Location unavailable';
-          nameEl.textContent = 'Select a landmark';
-          descEl.textContent = 'Pick from the list below.';
-          await loadAllLandmarks();
+          nameEl.textContent = 'Allow location access';
+          descEl.textContent = 'Please enable location permission to find nearby landmarks.';
         },
-        { enableHighAccuracy: true, timeout: 8000 }
+        { enableHighAccuracy: true, timeout: 10000 }
       );
     }
 
-    async function loadAllLandmarks() {
-      try {
-        const all = await fetchAPI('/api/landmarks');
-        // 加上假距離供顯示
-        const withDist = all.map(lm => ({ ...lm, distance: null }));
-        renderLandmarkList(withDist);
-        if (!selectedLandmark && withDist.length > 0) {
-          selectLandmark(withDist[0]);
-        }
-      } catch (err) {
-        console.error('Failed to load landmarks:', err);
-      }
-    }
-
-    function renderLandmarkList(landmarks) {
+    function renderLandmarkList(places) {
       const listEl = document.getElementById('landmarkList');
-      if (landmarks.length === 0) {
-        listEl.innerHTML = '<p class="panel-note">No landmarks found.</p>';
+      if (places.length === 0) {
+        listEl.innerHTML = '<p class="panel-note">No places found nearby. Your current location will be used.</p>';
         return;
       }
-      listEl.innerHTML = landmarks.map(lm => `
-        <div class="landmark-item" data-id="${lm.id}" data-lat="${lm.lat}" data-lng="${lm.lng}" data-name="${lm.name}">
+      listEl.innerHTML = places.map((p, i) => `
+        <div class="landmark-item" data-index="${i}">
           <div class="landmark-icon">
-            <i class="fa-solid ${CATEGORY_ICONS[lm.category] || CATEGORY_ICONS.default}"></i>
+            <i class="fa-solid ${categoryIcon(p.category)}"></i>
           </div>
           <div class="landmark-info">
-            <div class="landmark-name">${lm.name}</div>
-            <div class="landmark-dist">${lm.distance != null ? Math.round(lm.distance) + 'm away' : lm.description || ''}</div>
+            <div class="landmark-name">${p.name}</div>
+            <div class="landmark-dist">${Math.round(p.distance)}m away${p.address ? ' · ' + p.address : ''}</div>
           </div>
           <div class="landmark-check"><i class="fa-solid fa-check"></i></div>
         </div>
       `).join('');
 
-      // 綁定點擊事件
       listEl.querySelectorAll('.landmark-item').forEach(item => {
         item.addEventListener('click', () => {
-          const lm = landmarks.find(l => l.id === item.dataset.id);
-          if (lm) selectLandmark(lm);
+          const idx = parseInt(item.dataset.index);
+          selectLandmark(nearbyPlaces[idx]);
         });
       });
     }
 
-    function selectLandmark(lm) {
-      selectedLandmark = lm;
-      document.getElementById('selectedLandmarkName').textContent = lm.name;
+    function selectLandmark(place) {
+      selectedLandmark = place;
+      document.getElementById('selectedLandmarkName').textContent = place.name;
       document.getElementById('selectedLandmarkDesc').textContent =
-        lm.distance != null ? `${Math.round(lm.distance)}m away` : (lm.description || '');
+        `${Math.round(place.distance)}m away${place.address ? ' · ' + place.address : ''}`;
 
-      // 更新 picker 中的 selected 狀態
       document.querySelectorAll('.landmark-item').forEach(item => {
-        item.classList.toggle('selected', item.dataset.id === lm.id);
+        const idx = parseInt(item.dataset.index);
+        item.classList.toggle('selected', nearbyPlaces[idx] === place);
       });
+
+      // 選完自動收起 picker
+      document.getElementById('landmarkPicker').style.display = 'none';
     }
 
     // ═══ 地標選擇器 toggle ═══
@@ -367,14 +419,14 @@
       }
     })();
 
-    // ═══ Publish — 使用選中的地標座標 POST 到 API ═══
+    // ═══ Publish — 用真實地標座標 POST 到 API ═══
     document.querySelector('.submit-btn').addEventListener('click', async () => {
       const story = storyInput.value.trim();
       const activeTags = document.querySelectorAll('.tag-chip.active');
 
       if (!selectedLandmark) {
         showToast('Please select a landmark first!', 'error');
-        document.getElementById('landmarkPicker').style.display = 'block';
+        picker.style.display = 'block';
         return;
       }
       if (!story) {
@@ -393,7 +445,7 @@
         const newPost = await fetchAPI('/api/posts', {
           method: 'POST',
           body: JSON.stringify({
-            landmarkId: selectedLandmark.id,
+            landmarkName: selectedLandmark.name,
             authorId: CURRENT_USER_ID,
             coords: [selectedLandmark.lng, selectedLandmark.lat],
             img: '',
