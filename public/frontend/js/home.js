@@ -74,8 +74,34 @@ function renderMarkers() {
     });
 }
 
-// 地圖載入後從 API 拉資料
-map.on('load', loadPosts);
+// 地圖載入後：拉資料 + 顯示使用者位置
+map.on('load', () => {
+    loadPosts();
+    showUserLocation();
+});
+
+// 顯示使用者目前位置（藍色脈衝點）
+function showUserLocation() {
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(
+        (pos) => {
+            const { latitude: lat, longitude: lng } = pos.coords;
+
+            // 藍色定位點
+            const dot = document.createElement('div');
+            dot.className = 'user-location-dot';
+            dot.innerHTML = '<div class="pulse"></div>';
+            new mapboxgl.Marker(dot)
+                .setLngLat([lng, lat])
+                .addTo(map);
+
+            // 移動地圖中心到使用者位置
+            map.flyTo({ center: [lng, lat], zoom: 15, duration: 1500 });
+        },
+        () => { /* 定位失敗就不處理 */ },
+        { enableHighAccuracy: true, timeout: 8000 }
+    );
+}
 
 // 4. 更新彈窗內容
 function updateModal(index) {

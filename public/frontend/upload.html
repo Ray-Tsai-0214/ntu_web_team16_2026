@@ -176,7 +176,7 @@
     }
 
     // ═══ 用 Mapbox Geocoding API 搜尋真實附近地標 ═══
-    async function searchNearbyPlaces(lat, lng, radius) {
+    async function searchNearbyPlaces(lat, lng) {
       const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json`
         + `?types=poi&limit=10&language=zh-TW&access_token=${MAPBOX_TOKEN}`;
 
@@ -184,8 +184,8 @@
       if (!res.ok) throw new Error('Mapbox API error');
       const data = await res.json();
 
-      // 計算距離並篩選在 radius 內的 POI
-      const places = data.features
+      // 計算距離，不篩選 — 全部顯示，按距離排序
+      return data.features
         .map(f => ({
           name: f.text,
           fullName: f.place_name,
@@ -195,10 +195,7 @@
           category: f.properties.category ? f.properties.category.split(',').map(c => c.trim()) : [],
           address: f.properties.address || '',
         }))
-        .filter(p => p.distance <= radius)
         .sort((a, b) => a.distance - b.distance);
-
-      return places;
     }
 
     // ═══ Geolocation 偵測 + 搜尋附近 POI ═══
@@ -219,39 +216,30 @@
           userCoords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
           statusEl.innerHTML = '<i class="fa-solid fa-check"></i> Location detected';
 
-          try {
-            // 搜尋 100m 內的真實地標
-            nearbyPlaces = await searchNearbyPlaces(userCoords.lat, userCoords.lng, SEARCH_RADIUS);
+          // 「目前位置」永遠作為第一個選項
+          const currentLocationOption = {
+            name: `My Location (${userCoords.lat.toFixed(5)}, ${userCoords.lng.toFixed(5)})`,
+            lat: userCoords.lat,
+            lng: userCoords.lng,
+            distance: 0,
+            category: ['current'],
+            address: 'Your current GPS position',
+          };
 
-            if (nearbyPlaces.length > 0) {
-              renderLandmarkList(nearbyPlaces);
-              selectLandmark(nearbyPlaces[0]);
-            } else {
-              // 100m 內沒有 → 擴大到 300m 再試
-              nearbyPlaces = await searchNearbyPlaces(userCoords.lat, userCoords.lng, 300);
-              if (nearbyPlaces.length > 0) {
-                renderLandmarkList(nearbyPlaces);
-                selectLandmark(nearbyPlaces[0]);
-                descEl.textContent = `No places within ${SEARCH_RADIUS}m — showing up to 300m.`;
-              } else {
-                // 還是沒有 → 用當前座標作為自訂地點
-                nameEl.textContent = 'Current Location';
-                descEl.textContent = `${userCoords.lat.toFixed(5)}, ${userCoords.lng.toFixed(5)}`;
-                selectedLandmark = {
-                  name: 'Current Location',
-                  lat: userCoords.lat,
-                  lng: userCoords.lng,
-                  distance: 0,
-                  category: [],
-                  address: '',
-                };
-                renderLandmarkList([]);
-              }
-            }
+          try {
+            const mapboxResults = await searchNearbyPlaces(userCoords.lat, userCoords.lng);
+            // 合併：目前位置 + Mapbox POI 結果
+            nearbyPlaces = [currentLocationOption, ...mapboxResults];
+            renderLandmarkList(nearbyPlaces);
+            // 如果有 100m 內的 POI，預選它；否則預選目前位置
+            const closePlace = mapboxResults.find(p => p.distance <= SEARCH_RADIUS);
+            selectLandmark(closePlace || currentLocationOption);
           } catch (err) {
             console.error('Mapbox search failed:', err);
-            nameEl.textContent = 'Search failed';
-            descEl.textContent = 'Could not search for nearby places.';
+            // 即使 Mapbox 失敗，仍可使用目前位置
+            nearbyPlaces = [currentLocationOption];
+            renderLandmarkList(nearbyPlaces);
+            selectLandmark(currentLocationOption);
           }
         },
         (err) => {
@@ -267,21 +255,25 @@
     function renderLandmarkList(places) {
       const listEl = document.getElementById('landmarkList');
       if (places.length === 0) {
-        listEl.innerHTML = '<p class="panel-note">No places found nearby. Your current location will be used.</p>';
+        listEl.innerHTML = '<p class="panel-note">No places found.</p>';
         return;
       }
-      listEl.innerHTML = places.map((p, i) => `
-        <div class="landmark-item" data-index="${i}">
+      listEl.innerHTML = places.map((p, i) => {
+        const isCurrent = p.category && p.category[0] === 'current';
+        const icon = isCurrent ? 'fa-crosshairs' : categoryIcon(p.category);
+        const distText = isCurrent ? 'Your GPS position' : `${Math.round(p.distance)}m away${p.address ? ' · ' + p.address : ''}`;
+        return `
+        <div class="landmark-item${isCurrent ? ' current-location' : ''}" data-index="${i}">
           <div class="landmark-icon">
-            <i class="fa-solid ${categoryIcon(p.category)}"></i>
+            <i class="fa-solid ${icon}"></i>
           </div>
           <div class="landmark-info">
-            <div class="landmark-name">${p.name}</div>
-            <div class="landmark-dist">${Math.round(p.distance)}m away${p.address ? ' · ' + p.address : ''}</div>
+            <div class="landmark-name">${isCurrent ? '📍 Use Current Location' : p.name}</div>
+            <div class="landmark-dist">${distText}</div>
           </div>
           <div class="landmark-check"><i class="fa-solid fa-check"></i></div>
-        </div>
-      `).join('');
+        </div>`;
+      }).join('');
 
       listEl.querySelectorAll('.landmark-item').forEach(item => {
         item.addEventListener('click', () => {
