@@ -27,12 +27,12 @@ const seedUsers: User[] = [
   {
     id: "user-001", displayName: "StorySeeker99", avatarEmoji: "🐧",
     level: 3, totalPoints: 450, postCount: 42, reactionCount: 891,
-    dailyPostsUsed: 0, maxDailyPosts: 2, joinedAt: "2026-03-01T00:00:00Z",
+    dailyPostsUsed: 0, maxDailyPosts: 5, joinedAt: "2026-03-01T00:00:00Z",
   },
   {
     id: "user-002", displayName: "椰林貓貓", avatarEmoji: "🐱",
     level: 1, totalPoints: 30, postCount: 5, reactionCount: 12,
-    dailyPostsUsed: 0, maxDailyPosts: 2, joinedAt: "2026-03-05T00:00:00Z",
+    dailyPostsUsed: 0, maxDailyPosts: 5, joinedAt: "2026-03-05T00:00:00Z",
   },
 ];
 
@@ -65,7 +65,7 @@ class Database {
       ...data,
       id: `user-${String(this.users.length + 1).padStart(3, "0")}`,
       level: 1, totalPoints: 0, postCount: 0, reactionCount: 0,
-      dailyPostsUsed: 0, maxDailyPosts: 2, joinedAt: new Date().toISOString(),
+      dailyPostsUsed: 0, maxDailyPosts: 5, joinedAt: new Date().toISOString(),
     };
     this.users.push(user);
     return user;
