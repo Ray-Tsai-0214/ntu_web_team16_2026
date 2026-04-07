@@ -28,6 +28,8 @@
             <div id="map" style="width: 100%; height: 100%;"></div>
         </div>
 
+
+
         <!-- 修正點 1：將遮罩與彈窗移到地圖外面，避免事件被地圖攔截 -->
         <div class="fab-overlay" id="fabOverlay"></div>
 
@@ -53,7 +55,49 @@
                 </div>
             </div>
         </div>
+        <!-- 全螢幕貼文詳情層 -->
+        <div class="full-view-overlay" id="fullView">
+            <div class="full-view-header">
+                <button id="closeFullView"><i class="fa-solid fa-chevron-down"></i></button>
+                <span class="header-title">貼文詳情</span>
+            </div>
 
+            <div class="full-view-scroll-area">
+                <!-- 內容主體 -->
+                <div class="full-content-card">
+                    <div class="full-image-wrapper">
+                        <img src="" id="fullViewImage">
+                    </div>
+
+                    <!-- 反應統計列 (對齊 ReactionType) -->
+                    <div class="reaction-stats-bar" id="reactionStats">
+                        <!-- 由 JS 動態產生 😂, 🤯, 👍, 🤔, 👎 -->
+                    </div>
+
+                    <div class="full-text-content">
+                        <p id="fullViewText"></p>
+                        <div class="full-meta">
+                            <span id="fullViewDate"></span>
+                            <div class="tags-row" id="fullViewTags"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 留言區塊 (預留介面) -->
+                <div class="comment-section">
+                    <h3 class="section-title">留言板</h3>
+                    <div class="comment-list" id="commentList">
+                        <div class="empty-comment">目前還沒有留言，快來搶頭香！</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 底部輸入框 -->
+            <div class="comment-bar">
+                <input type="text" id="commentInput" placeholder="說點什麼好笑的...">
+                <button id="sendComment"><i class="fa-solid fa-paper-plane"></i></button>
+            </div>
+        </div>
         <!-- 底部功能鍵組 -->
         <div class="fab-wrapper" id="fabWrapper">
             <a href="profile.html" class="fab-child"><i class="fa-solid fa-user"></i></a>

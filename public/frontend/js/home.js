@@ -174,3 +174,67 @@ document.addEventListener('click', (e) => {
         document.querySelectorAll('.map-marker').forEach(m => m.classList.remove('enlarge'));
     }
 });
+
+// 新增 DOM 元素獲取
+const fullView = document.getElementById('fullView');
+const closeFullView = document.getElementById('closeFullView');
+
+// --- A. 監聽拍立得卡片點擊 ---
+// 修改原有的渲染邏輯，讓卡片被點擊時開啟 Full View
+document.querySelector('.polaroid-card').addEventListener('click', (e) => {
+    // 排除掉點擊關閉按鈕或反應按鈕的狀況
+    if (e.target.closest('.close-modal') || e.target.closest('.action-item')) return;
+    openFullView();
+});
+
+// --- B. 開啟詳情層與抓取資料 ---
+async function openFullView() {
+    const post = postsData[currentPostIndex];
+    if (!post) return;
+
+    // 1. 先填入基礎資訊
+    document.getElementById('fullViewImage').src = post.img;
+    document.getElementById('fullViewText').innerText = post.text;
+    document.getElementById('fullViewDate').innerText = post.date;
+
+    // 2. 顯示層級
+    fullView.classList.add('active');
+
+    // 3. 從 API 抓取完整的 Reactions 統計 (對應 [id]/route.ts 的 GET)
+    try {
+        const detail = await fetchAPI(`/api/posts/${post.id}`);
+        renderReactionStats(detail.reactions);
+    } catch (err) {
+        console.error("無法載入反應統計", err);
+    }
+}
+
+// --- C. 動態渲染 5 種反應按鈕 ---
+function renderReactionStats(counts) {
+    // 反應類型與 Emoji 對照 (與 type.ts 同步)
+    const emojiMap = {
+        hilarious: "😂",
+        wtf: "🤯",
+        nice: "👍",
+        doubt: "🤔",
+        boring: "👎"
+    };
+
+    const container = document.getElementById('reactionStats');
+    container.innerHTML = Object.keys(emojiMap).map(type => `
+        <button class="reaction-btn-pill" onclick="handleReactionClick('${type}')">
+            <span style="font-size: 1.4rem;">${emojiMap[type]}</span>
+            <span>${counts[type] || 0}</span>
+        </button>
+    `).join('');
+}
+
+// --- D. 處理反應點擊 (預留給未來 PATCH /api/posts/[id]/reactions) ---
+function handleReactionClick(type) {
+    console.log("用戶點擊了反應:", type);
+    // 這裡可以呼叫 API 同步反應
+}
+
+closeFullView.onclick = () => fullView.classList.remove('active');
+
+// 點擊地圖標記時，確保標記會放大並更新 Modal (原本的邏輯)
