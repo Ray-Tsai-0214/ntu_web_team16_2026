@@ -62,8 +62,39 @@ body {
 .header-top {
   width: 100%;
   display: flex;
-  justify-content: flex-start;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 16px;
+}
+
+.logout-btn {
+  background-color: rgba(255, 255, 255, 0.5);
+  border: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: var(--mutedBrown);
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 5px rgba(178, 149, 134, 0.1);
+}
+
+.logout-btn:hover {
+  background-color: var(--cardWhite);
+  color: #c75454;
+}
+
+.empty-feed {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--textLight);
+  background-color: var(--cardWhite);
+  border-radius: var(--borderRadiusCard);
+  box-shadow: 0 2px 8px rgba(178, 149, 134, 0.1);
 }
 
 .back-btn {

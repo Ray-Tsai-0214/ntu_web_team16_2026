@@ -9,6 +9,7 @@ const map = new mapboxgl.Map({
 
 // 2. 從 API 載入貼文（取代硬編碼的 postsData）
 let postsData = [];
+let currentUser = null;
 
 async function loadPosts() {
     try {
@@ -23,6 +24,23 @@ async function loadPosts() {
         console.error('Failed to load posts from API:', err);
     }
 }
+
+// 顯示登入狀態：登入 → 顯示 emoji + 點擊到 profile；未登入 → 顯示 user icon + 點擊到 login
+async function loadUserStatus() {
+    currentUser = await getCurrentUser();
+    const btn = document.getElementById('userStatus');
+    if (!btn) return;
+    if (currentUser) {
+        btn.innerHTML = `<span style="font-size: 1.3rem;">${currentUser.avatarEmoji}</span>`;
+        btn.setAttribute('aria-label', `Profile (${currentUser.username})`);
+        btn.addEventListener('click', () => { window.location.href = 'profile.html'; });
+    } else {
+        btn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i>';
+        btn.setAttribute('aria-label', 'Log in');
+        btn.addEventListener('click', () => { window.location.href = 'login.html'; });
+    }
+}
+loadUserStatus();
 
 const fabWrapper = document.getElementById('fabWrapper');
 const fabToggle = document.getElementById('fabToggle');
@@ -152,6 +170,16 @@ function updateModal(index) {
 
 // 5. 按鈕點擊 — 更新本地 + 同步 API
 
+function handleAuthError(err) {
+    if (/Not authenticated/i.test(err.message)) {
+        if (confirm('You need to log in to react. Go to login page?')) {
+            window.location.href = 'login.html';
+        }
+        return true;
+    }
+    return false;
+}
+
 likeBtn.onclick = function (e) {
     e.stopPropagation();
     if (currentPostIndex === null) return;
@@ -165,7 +193,16 @@ likeBtn.onclick = function (e) {
     fetchAPI(`/api/posts/${data.id}`, {
         method: 'PATCH',
         body: JSON.stringify({ action: 'like' }),
-    }).catch(err => console.error('Like sync failed:', err));
+    }).catch(err => {
+        if (handleAuthError(err)) {
+            // rollback optimistic update
+            data.isLiked = !data.isLiked;
+            data.likes += data.isLiked ? 1 : -1;
+            updateModal(currentPostIndex);
+        } else {
+            console.error('Like sync failed:', err);
+        }
+    });
 };
 
 saveBtn.onclick = function (e) {
@@ -181,7 +218,15 @@ saveBtn.onclick = function (e) {
     fetchAPI(`/api/posts/${data.id}`, {
         method: 'PATCH',
         body: JSON.stringify({ action: 'save' }),
-    }).catch(err => console.error('Save sync failed:', err));
+    }).catch(err => {
+        if (handleAuthError(err)) {
+            data.isSaved = !data.isSaved;
+            data.saves += data.isSaved ? 1 : -1;
+            updateModal(currentPostIndex);
+        } else {
+            console.error('Save sync failed:', err);
+        }
+    });
 };
 
 // 點擊地圖空白處重置標記點大小

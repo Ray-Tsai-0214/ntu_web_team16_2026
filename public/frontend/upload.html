@@ -141,6 +141,11 @@
 
   <script src="js/api.js"></script>
   <script>
+    // ═══ Auth gate — bounce unauthed users to login (cookie set on /api/auth/login response)
+    getCurrentUser().then((me) => {
+      if (!me) window.location.replace('login.html');
+    });
+
     // ═══ Mapbox token（與 home.html 共用） ═══
     const MAPBOX_TOKEN = 'pk.eyJ1Ijoib3JhbmdlaGVhcnQiLCJhIjoiY21uZWJkZzJqMW93ZDJ3cHJrZTlpNWo3dCJ9.ECWy4Lc3ZCMWlc5qZPFobQ';
     const SEARCH_RADIUS = 100; // 方圓 100 公尺
@@ -434,11 +439,11 @@
       const tags = [...activeTags].map(t => t.textContent.replace('#', ''));
 
       try {
+        // author_id is taken from the session by the API — never sent in the body.
         const newPost = await fetchAPI('/api/posts', {
           method: 'POST',
           body: JSON.stringify({
             landmarkName: selectedLandmark.name,
-            authorId: CURRENT_USER_ID,
             coords: [selectedLandmark.lng, selectedLandmark.lat],
             img: '',
             text: story,
@@ -451,7 +456,12 @@
         charCounter.textContent = '0 / 300';
         document.querySelectorAll('.tag-chip').forEach(c => c.classList.remove('active'));
       } catch (err) {
-        showToast(`Publish failed: ${err.message}`, 'error');
+        if (/Not authenticated/i.test(err.message)) {
+          showToast('Please log in to post', 'error');
+          setTimeout(() => window.location.replace('login.html'), 1000);
+        } else {
+          showToast(`Publish failed: ${err.message}`, 'error');
+        }
       }
     });
   </script>

@@ -6,6 +6,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { ProfileRow, toApiProfile } from "@/lib/supabase/mappers";
 
 const USERNAME_RE = /^[a-zA-Z0-9_]{3,20}$/;
 const EMAIL_DOMAIN = process.env.OMG_AUTH_EMAIL_DOMAIN || "omg.local";
@@ -79,18 +80,25 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // 3. Insert profile row.
-  const { error: profileErr } = await admin.from("profiles").insert({
-    id: created.user.id,
-    username,
-    display_name: displayName,
-    avatar_emoji: avatarEmoji,
-  });
+  // 3. Insert profile row and read it back so we get the trigger-applied defaults.
+  const { data: insertedProfile, error: profileErr } = await admin
+    .from("profiles")
+    .insert({
+      id: created.user.id,
+      username,
+      display_name: displayName,
+      avatar_emoji: avatarEmoji,
+    })
+    .select("*")
+    .single();
 
-  if (profileErr) {
+  if (profileErr || !insertedProfile) {
     // Rollback: delete the auth user we just created so signup is atomic.
     await admin.auth.admin.deleteUser(created.user.id);
-    return NextResponse.json({ error: profileErr.message }, { status: 500 });
+    return NextResponse.json(
+      { error: profileErr?.message || "Failed to create profile" },
+      { status: 500 }
+    );
   }
 
   // 4. Sign the user in via the SSR client so the cookie is set on the response.
@@ -106,13 +114,8 @@ export async function POST(request: NextRequest) {
 
   return NextResponse.json(
     {
-      user: { id: created.user.id, username },
-      profile: {
-        id: created.user.id,
-        username,
-        display_name: displayName,
-        avatar_emoji: avatarEmoji,
-      },
+      user: { id: created.user.id },
+      profile: toApiProfile(insertedProfile as ProfileRow),
     },
     { status: 201 }
   );

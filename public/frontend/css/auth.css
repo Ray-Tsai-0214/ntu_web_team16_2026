@@ -1,0 +1,255 @@
+/* Auth pages (login.html, signup.html)
+   Reuses the cream/beige palette and 480px app-container shell from profile.css. */
+
+:root {
+  --lightGreen: #d8d8a3;
+  --lightPeach: #ffe1c5;
+  --paleCream: #ffedcc;
+  --mutedBrown: #b29586;
+  --bgLight: #faf8f5;
+  --cardWhite: #ffffff;
+  --textDark: #5a4b43;
+  --textLight: #8c776c;
+  --danger: #c75454;
+
+  --borderRadiusCard: 16px;
+  --borderRadiusPill: 999px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background-color: #e0e0e0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  color: var(--textDark);
+}
+
+.app-container {
+  width: 100%;
+  max-width: 480px;
+  min-width: 375px;
+  height: 100vh;
+  background-color: var(--paleCream);
+  position: relative;
+  overflow-y: auto;
+  overflow-x: hidden;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Brand header at top */
+.auth-header {
+  padding: 48px 24px 24px;
+  background: linear-gradient(to bottom right, var(--lightPeach), var(--paleCream));
+  border-bottom-left-radius: 24px;
+  border-bottom-right-radius: 24px;
+  text-align: center;
+}
+
+.auth-logo {
+  width: 88px;
+  height: 88px;
+  background-color: var(--cardWhite);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.6rem;
+  margin: 0 auto 16px;
+  box-shadow: 0 4px 12px rgba(178, 149, 134, 0.25);
+  border: 3px solid var(--lightGreen);
+}
+
+.auth-title {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--mutedBrown);
+  letter-spacing: 1px;
+}
+
+.auth-subtitle {
+  font-size: 0.9rem;
+  color: var(--textLight);
+  margin-top: 6px;
+}
+
+/* Form card */
+.auth-card {
+  background-color: var(--cardWhite);
+  margin: 20px 16px 16px;
+  padding: 24px 20px;
+  border-radius: var(--borderRadiusCard);
+  box-shadow: 0 3px 10px rgba(178, 149, 134, 0.1);
+}
+
+.auth-card h2 {
+  font-size: 1.15rem;
+  color: var(--mutedBrown);
+  font-weight: 700;
+  margin-bottom: 18px;
+  text-align: center;
+}
+
+.field {
+  margin-bottom: 14px;
+}
+
+.field-label {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--textLight);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+.field-input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1.5px solid var(--paleCream);
+  background-color: var(--bgLight);
+  border-radius: 12px;
+  font-size: 0.95rem;
+  color: var(--textDark);
+  font-family: inherit;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.field-input:focus {
+  outline: none;
+  border-color: var(--mutedBrown);
+  background-color: var(--cardWhite);
+}
+
+.field-input::placeholder {
+  color: #c4b8b0;
+}
+
+.field-hint {
+  font-size: 0.72rem;
+  color: var(--textLight);
+  margin-top: 4px;
+}
+
+/* Emoji picker for signup */
+.emoji-picker {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.emoji-option {
+  background-color: var(--bgLight);
+  border: 1.5px solid transparent;
+  border-radius: 10px;
+  padding: 8px 0;
+  font-size: 1.4rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.emoji-option:hover {
+  background-color: var(--paleCream);
+  transform: scale(1.05);
+}
+
+.emoji-option.selected {
+  background-color: var(--lightPeach);
+  border-color: var(--mutedBrown);
+}
+
+/* Submit button */
+.auth-submit {
+  width: 100%;
+  padding: 14px;
+  background-color: var(--mutedBrown);
+  color: var(--cardWhite);
+  border: none;
+  border-radius: var(--borderRadiusPill);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 8px;
+  transition: transform 0.15s ease, background-color 0.2s ease;
+  letter-spacing: 0.5px;
+}
+
+.auth-submit:hover:not(:disabled) {
+  background-color: #9a7e70;
+  transform: translateY(-1px);
+}
+
+.auth-submit:disabled {
+  background-color: #c4b8b0;
+  cursor: not-allowed;
+}
+
+/* Error display */
+.auth-error {
+  background-color: #fdecec;
+  border: 1px solid var(--danger);
+  color: var(--danger);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 0.85rem;
+  margin-bottom: 14px;
+  display: none;
+}
+
+.auth-error.show {
+  display: block;
+  animation: shake 0.4s ease;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-4px); }
+  40%, 80% { transform: translateX(4px); }
+}
+
+/* Switch link (login ↔ signup) */
+.auth-switch {
+  text-align: center;
+  margin-top: 16px;
+  font-size: 0.85rem;
+  color: var(--textLight);
+}
+
+.auth-switch a {
+  color: var(--mutedBrown);
+  font-weight: 600;
+  text-decoration: none;
+  margin-left: 4px;
+}
+
+.auth-switch a:hover {
+  text-decoration: underline;
+}
+
+/* Loading spinner inside button */
+.spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: var(--cardWhite);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  vertical-align: middle;
+  margin-right: 6px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

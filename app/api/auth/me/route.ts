@@ -3,6 +3,7 @@
 
 import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { ProfileRow, toApiProfile } from "@/lib/supabase/mappers";
 
 export async function GET() {
   const supabase = await createSupabaseServerClient();
@@ -21,5 +22,8 @@ export async function GET() {
     .eq("id", user.id)
     .maybeSingle();
 
-  return NextResponse.json({ user: { id: user.id }, profile });
+  return NextResponse.json({
+    user: { id: user.id },
+    profile: profile ? toApiProfile(profile as ProfileRow) : null,
+  });
 }

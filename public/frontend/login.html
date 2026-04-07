@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OMG — Login</title>
+  <link rel="stylesheet" href="css/auth.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+  <main class="app-container">
+
+    <header class="auth-header">
+      <div class="auth-logo">🐧</div>
+      <h1 class="auth-title">OMG</h1>
+      <p class="auth-subtitle">Odd Map Gossip · NTU campus</p>
+    </header>
+
+    <section class="auth-card">
+      <h2>Welcome back</h2>
+
+      <div class="auth-error" id="errorBox"></div>
+
+      <form id="loginForm" novalidate>
+        <div class="field">
+          <label class="field-label" for="username">Username</label>
+          <input
+            class="field-input"
+            type="text"
+            id="username"
+            name="username"
+            placeholder="your_username"
+            autocomplete="username"
+            required
+          >
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="password">Password</label>
+          <input
+            class="field-input"
+            type="password"
+            id="password"
+            name="password"
+            placeholder="••••••••"
+            autocomplete="current-password"
+            required
+          >
+        </div>
+
+        <button type="submit" class="auth-submit" id="submitBtn">
+          <span id="submitText">Log in</span>
+        </button>
+      </form>
+
+      <p class="auth-switch">
+        New here?<a href="signup.html">Create an account</a>
+      </p>
+    </section>
+
+  </main>
+
+  <script src="js/api.js"></script>
+  <script src="js/login.js"></script>
+</body>
+</html>

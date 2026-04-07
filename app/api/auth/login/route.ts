@@ -4,6 +4,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { ProfileRow, toApiProfile } from "@/lib/supabase/mappers";
 
 const EMAIL_DOMAIN = process.env.OMG_AUTH_EMAIL_DOMAIN || "omg.local";
 
@@ -46,5 +47,8 @@ export async function POST(request: NextRequest) {
     .eq("id", data.user.id)
     .maybeSingle();
 
-  return NextResponse.json({ user: { id: data.user.id }, profile });
+  return NextResponse.json({
+    user: { id: data.user.id },
+    profile: profile ? toApiProfile(profile as ProfileRow) : null,
+  });
 }
