@@ -19,9 +19,31 @@ const foodData = {
   '蘋果':     { exp: 6,  hunger: 12, cost: 12, emoji: '🍏' },
 };
 
+// ── 寵物圖層資料 ──
+// 每個 pet entry：body（必填）、face（必填）、deco（可空字串）
+const petAssets = {
+  'default': {
+    body: 'assets/pet/body_0.png',
+    face: 'assets/pet/face_0.png',
+    deco: '',                          // 無飾品
+  },
+  'cat1': {
+    body: 'assets/pet/body_1.png',
+    face: 'assets/pet/face_1.png',
+    deco: 'assets/pet/deco_1.png',
+  },
+  'cat2': {
+    body: 'assets/pet/body_2.png',
+    face: 'assets/pet/face_0.png',
+    deco: 'assets/pet/deco_2.png',
+  },
+  // 之後新增：複製一個 block，改 key 跟路徑就好
+};
+
 // ── 初始化 UI ──
 function initUI() {
   updateStats();
+  setPetLayers(equippedLayers); 
 }
 
 function updateStats() {
@@ -75,17 +97,44 @@ document.querySelectorAll('.modalOverlay').forEach(el => {
 //   card.classList.add('itemUsed');
 //   setTimeout(() => card.classList.remove('itemUsed'), 380);
 // }
-function useWardrobeItem(card) {
-  const emoji = card.querySelector('.itemEmoji').textContent;
+// ── 目前穿著狀態（各層獨立） ──
+const equippedLayers = {
+  body: 'assets/pet/body_0.png',
+  face: 'assets/pet/face_0.png',
+  deco: '',
+};
 
-  const accessory = document.getElementById('petAccessory');
+function setPetLayers({ body, face, deco } = equippedLayers) {
+  document.getElementById('layerBody').src = body ?? equippedLayers.body;
+  document.getElementById('layerFace').src = face ?? equippedLayers.face;
+  document.getElementById('layerDeco').src = deco ?? '';
+}
 
-  // 換裝（覆蓋）
-  accessory.textContent = emoji;
+// layer: 'body' | 'face' | 'deco'
+// key: 'body_0' | 'face_1' | 'deco_2' | '' (deco 無)
+function useWardrobeItem(card, layer, key) {
+  const path = key ? `assets/pet/${key}.png` : '';
+  equippedLayers[layer] = path;
+  setPetLayers(equippedLayers);
+
+  // 同 panel 內取消其他選中
+  const panel = document.getElementById(`wardrobePanel-${layer}`);
+  panel.querySelectorAll('.itemCard.itemSelected').forEach(c => c.classList.remove('itemSelected'));
+  card.classList.add('itemSelected');
 
   // 點擊動畫
   card.classList.add('itemUsed');
   setTimeout(() => card.classList.remove('itemUsed'), 380);
+}
+
+function switchWardrobeTab(tab, btn) {
+  // 切換 tab 樣式
+  document.querySelectorAll('.modalTab').forEach(t => t.classList.remove('tabActive'));
+  btn.classList.add('tabActive');
+
+  // 切換 panel
+  document.querySelectorAll('.wardrobePanel').forEach(p => p.classList.remove('panelActive'));
+  document.getElementById(`wardrobePanel-${tab}`).classList.add('panelActive');
 }
 
 // ── 餵食 ──
@@ -149,12 +198,12 @@ function showFeedEffect(emoji, expGain, hungerGain, cost) {
 
 // ── 說話功能效果 ──
 const petLines = [
-  '喵～今天也要陪我玩嗎？',
+  '今天也要陪我玩嗎？',
   '摸摸我嘛～',
-  '我肚子有點餓了喵。',
+  '我肚子有點餓了！',
   '你來啦！',
   '今天的我也很可愛吧？',
-  '喵嗚～好開心！',
+  '哇～好開心！',
   '別走，再陪我一下。',
   '我最喜歡你了！'
 ];
@@ -169,7 +218,7 @@ function showPetSpeech() {
 
   if (state.hunger < 30) {
     lines = [
-      '喵……我有點餓了。',
+      '嗷……餓得沒力氣了。',
       '想吃小魚乾。',
       '肚子空空的耶。'
     ];
@@ -199,6 +248,20 @@ function showPetSpeech() {
     speech.classList.remove('active');
   }, 1800);
 }
+
+
+
+// // 目前使用的寵物
+// let currentPet = 'default';
+
+// function setPetLayers(petKey) {
+//   const pet = petAssets[petKey];
+//   if (!pet) return;
+//   currentPet = petKey;
+//   document.getElementById('layerBody').src = pet.body;
+//   document.getElementById('layerFace').src = pet.face;
+//   document.getElementById('layerDeco').src = pet.deco ?? '';
+// }
 
 // ── DOMContentLoaded ──
 document.addEventListener('DOMContentLoaded', initUI);
