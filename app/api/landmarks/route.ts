@@ -1,22 +1,36 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { LandmarkRow, haversineMetres, toApiLandmark } from "@/lib/supabase/mappers";
 
-// GET /api/landmarks — 取得所有地標（可選：附近查詢）
+// GET /api/landmarks
+//   no params      → all landmarks
+//   ?lat=&lng=     → landmarks within `radius` metres (default 200), sorted by distance
 export async function GET(request: NextRequest) {
+  const supabase = await createSupabaseServerClient();
   const { searchParams } = request.nextUrl;
+
+  const { data, error } = await supabase.from("landmarks").select("*");
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  const rows = (data ?? []) as LandmarkRow[];
   const lat = searchParams.get("lat");
   const lng = searchParams.get("lng");
-  const radius = searchParams.get("radius");
 
-  // 如果有提供座標，回傳附近地標
   if (lat && lng) {
-    const nearby = db.getNearbyLandmarks(
-      parseFloat(lat),
-      parseFloat(lng),
-      radius ? parseFloat(radius) : 200
-    );
+    const userLat = parseFloat(lat);
+    const userLng = parseFloat(lng);
+    const radius = parseFloat(searchParams.get("radius") ?? "200");
+    const nearby = rows
+      .map((lm) => ({
+        ...toApiLandmark(lm),
+        distance: haversineMetres(userLat, userLng, lm.lat, lm.lng),
+      }))
+      .filter((lm) => lm.distance <= radius)
+      .sort((a, b) => a.distance - b.distance);
     return NextResponse.json(nearby);
   }
 
-  return NextResponse.json(db.getLandmarks());
+  return NextResponse.json(rows.map(toApiLandmark));
 }

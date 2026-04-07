@@ -1,23 +1,16 @@
-import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { NextResponse } from "next/server";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { ProfileRow, toApiProfile } from "@/lib/supabase/mappers";
 
-// GET /api/users — 取得所有使用者
+// GET /api/users — list all profiles (public).
+// NOTE: POST is no longer here — use POST /api/auth/signup instead.
 export async function GET() {
-  return NextResponse.json(db.getUsers());
-}
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("*")
+    .order("joined_at", { ascending: false });
 
-// POST /api/users — 建立新使用者
-export async function POST(request: NextRequest) {
-  const body = await request.json();
-  const { displayName, avatarEmoji } = body;
-
-  if (!displayName || !avatarEmoji) {
-    return NextResponse.json(
-      { error: "Missing required fields: displayName, avatarEmoji" },
-      { status: 400 }
-    );
-  }
-
-  const user = db.createUser({ displayName, avatarEmoji });
-  return NextResponse.json(user, { status: 201 });
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  return NextResponse.json((data ?? []).map((p) => toApiProfile(p as ProfileRow)));
 }

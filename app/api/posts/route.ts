@@ -1,85 +1,162 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { PostRow, toApiPost } from "@/lib/supabase/mappers";
 
-// GET /api/posts — 取得所有貼文（可用 ?landmarkId= 篩選）
+// GET /api/posts — list all posts (optionally filtered by ?landmarkId=)
 export async function GET(request: NextRequest) {
+  const supabase = await createSupabaseServerClient();
   const landmarkId = request.nextUrl.searchParams.get("landmarkId");
-  const posts = db.getPosts(landmarkId ?? undefined);
-  return NextResponse.json(posts);
+
+  let q = supabase.from("posts").select("*").order("created_at", { ascending: false });
+  if (landmarkId) q = q.eq("landmark_id", landmarkId);
+
+  const { data, error } = await q;
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  return NextResponse.json((data ?? []).map((p) => toApiPost(p as PostRow)));
 }
 
-// POST /api/posts — 新增貼文
-// 接受兩種模式：
-//   1. landmarkId — 使用現有地標
-//   2. landmarkName + coords — 自動建立新地標（來自 Mapbox 真實 POI）
+// POST /api/posts — create a post (auth required)
+// Body: { landmarkId | landmarkName, coords:[lng,lat], img, text, tags? }
+// authorId is taken from the session, NEVER from the body.
 export async function POST(request: NextRequest) {
-  const body = await request.json();
-  const { landmarkId, landmarkName, authorId, coords, img, text, tags } = body;
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  if (!authorId || !text) {
-    return NextResponse.json(
-      { error: "Missing required fields: authorId, text" },
-      { status: 400 }
-    );
+  if (!user) {
+    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
   }
 
-  if (!coords || !Array.isArray(coords) || coords.length !== 2) {
+  let body: {
+    landmarkId?: unknown;
+    landmarkName?: unknown;
+    coords?: unknown;
+    img?: unknown;
+    text?: unknown;
+    tags?: unknown;
+  };
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+  }
+
+  const text = typeof body.text === "string" ? body.text.trim() : "";
+  if (!text) {
+    return NextResponse.json({ error: "Missing required field: text" }, { status: 400 });
+  }
+  if (text.length > 500) {
+    return NextResponse.json({ error: "text too long (max 500)" }, { status: 400 });
+  }
+
+  const coords = body.coords;
+  if (
+    !Array.isArray(coords) ||
+    coords.length !== 2 ||
+    typeof coords[0] !== "number" ||
+    typeof coords[1] !== "number"
+  ) {
     return NextResponse.json(
       { error: "Missing or invalid coords: [lng, lat]" },
       { status: 400 }
     );
   }
+  const [lng, lat] = coords as [number, number];
 
-  const author = db.getUser(authorId);
-  if (!author) {
-    return NextResponse.json({ error: "User not found" }, { status: 404 });
-  }
+  // Daily post limit check.
+  const { data: profile, error: profileErr } = await supabase
+    .from("profiles")
+    .select("daily_posts_used, max_daily_posts")
+    .eq("id", user.id)
+    .maybeSingle();
 
-  if (author.dailyPostsUsed >= author.maxDailyPosts) {
+  if (profileErr || !profile) {
     return NextResponse.json(
-      { error: `Daily post limit reached (${author.maxDailyPosts})` },
+      { error: profileErr?.message || "Profile not found" },
+      { status: 500 }
+    );
+  }
+  if (profile.daily_posts_used >= profile.max_daily_posts) {
+    return NextResponse.json(
+      { error: `Daily post limit reached (${profile.max_daily_posts})` },
       { status: 429 }
     );
   }
 
-  // 決定 landmarkId：使用現有的，或從 Mapbox POI 名稱自動建立
-  let resolvedLandmarkId = landmarkId;
+  // Resolve landmark — existing id, or create on the fly from a Mapbox POI name.
+  let landmarkId =
+    typeof body.landmarkId === "string" && body.landmarkId.trim()
+      ? body.landmarkId.trim()
+      : null;
+  const landmarkName =
+    typeof body.landmarkName === "string" && body.landmarkName.trim()
+      ? body.landmarkName.trim()
+      : null;
 
-  if (!resolvedLandmarkId && landmarkName) {
-    // 檢查是否已存在同名地標（避免重複）
-    const existing = db.getLandmarks().find(
-      (lm) => lm.name === landmarkName
-    );
+  if (!landmarkId && landmarkName) {
+    // Need to insert into landmarks. Public users have no INSERT policy on landmarks
+    // (read-only by RLS), so use the admin client for this trusted operation.
+    const admin = createSupabaseAdminClient();
+
+    const { data: existing } = await admin
+      .from("landmarks")
+      .select("id")
+      .eq("name", landmarkName)
+      .maybeSingle();
+
     if (existing) {
-      resolvedLandmarkId = existing.id;
+      landmarkId = (existing as { id: string }).id;
     } else {
-      // 自動建立新地標
-      const newLandmark = db.createLandmark({
+      const newId = `lm-poi-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+      const { error: insertErr } = await admin.from("landmarks").insert({
+        id: newId,
         name: landmarkName,
         description: "",
-        lat: coords[1],  // coords 是 [lng, lat]
-        lng: coords[0],
+        lat,
+        lng,
         category: "poi",
       });
-      resolvedLandmarkId = newLandmark.id;
+      if (insertErr) {
+        return NextResponse.json({ error: insertErr.message }, { status: 500 });
+      }
+      landmarkId = newId;
     }
   }
 
-  if (!resolvedLandmarkId) {
+  if (!landmarkId) {
     return NextResponse.json(
       { error: "Must provide landmarkId or landmarkName" },
       { status: 400 }
     );
   }
 
-  const post = db.createPost({
-    landmarkId: resolvedLandmarkId,
-    authorId,
-    coords: coords as [number, number],
-    img: img ?? "",
-    text,
-    tags: tags ?? [],
-  });
+  // Insert the post — author_id MUST equal auth.uid() per RLS.
+  const tags = Array.isArray(body.tags) ? body.tags.filter((t) => typeof t === "string") : [];
+  const img = typeof body.img === "string" ? body.img : "";
 
-  return NextResponse.json(post, { status: 201 });
+  const { data: inserted, error: insertErr } = await supabase
+    .from("posts")
+    .insert({
+      landmark_id: landmarkId,
+      author_id: user.id,
+      coords_lng: lng,
+      coords_lat: lat,
+      img,
+      body: text,
+      tags,
+    })
+    .select("*")
+    .single();
+
+  if (insertErr || !inserted) {
+    return NextResponse.json(
+      { error: insertErr?.message || "Failed to create post" },
+      { status: 500 }
+    );
+  }
+
+  return NextResponse.json(toApiPost(inserted as PostRow), { status: 201 });
 }
