@@ -31,6 +31,8 @@ const postModal = document.getElementById('postModal');
 const closeModal = document.getElementById('closeModal');
 const likeBtn = document.getElementById('likeBtn');
 const saveBtn = document.getElementById('saveBtn');
+const fullLikeBtn = document.getElementById('fullLikeBtn');
+const fullSaveBtn = document.getElementById('fullSaveBtn');
 let currentPostIndex = null;
 
 // --- 選單控制邏輯 ---
@@ -108,30 +110,44 @@ function updateModal(index) {
     currentPostIndex = index;
     const data = postsData[index];
 
-    document.getElementById('modalImage').src = data.img;
-    document.getElementById('modalText').innerText = data.text;
-    document.querySelector('.post-date').innerText = data.date;
+    // 更新圖片與文字 (包含小視窗與大視窗)
+    const imgEls = [document.getElementById('modalImage'), document.getElementById('fullViewImage')];
+    const textEls = [document.getElementById('modalText'), document.getElementById('fullViewText')];
+    const dateEls = [document.querySelector('.post-modal .post-date'), document.getElementById('fullViewDate')];
 
-    likeBtn.querySelector('.count').innerText = data.likes;
-    saveBtn.querySelector('.count').innerText = data.saves;
+    imgEls.forEach(el => { if(el) el.src = data.img; });
+    textEls.forEach(el => { if(el) el.innerText = data.text; });
+    dateEls.forEach(el => { if(el) el.innerText = data.date; });
 
-    const likeIcon = likeBtn.querySelector('i');
-    if (data.isLiked) {
-        likeBtn.classList.add('active', 'like-active');
-        likeIcon.classList.replace('fa-regular', 'fa-solid');
-    } else {
-        likeBtn.classList.remove('active', 'like-active');
-        likeIcon.classList.replace('fa-solid', 'fa-regular');
-    }
+    // 更新愛心與收藏數字 (包含小視窗與大視窗)
+    const likeBtnGroup = [likeBtn, fullLikeBtn];
+    const saveBtnGroup = [saveBtn, fullSaveBtn];
 
-    const saveIcon = saveBtn.querySelector('i');
-    if (data.isSaved) {
-        saveBtn.classList.add('active', 'save-active');
-        saveIcon.classList.replace('fa-regular', 'fa-solid');
-    } else {
-        saveBtn.classList.remove('active', 'save-active');
-        saveIcon.classList.replace('fa-solid', 'fa-regular');
-    }
+    likeBtnGroup.forEach(btn => {
+        if(!btn) return;
+        btn.querySelector('.count').innerText = data.likes;
+        const icon = btn.querySelector('i');
+        if (data.isLiked) {
+            btn.classList.add('active', 'like-active');
+            icon.classList.replace('fa-regular', 'fa-solid');
+        } else {
+            btn.classList.remove('active', 'like-active');
+            icon.classList.replace('fa-solid', 'fa-regular');
+        }
+    });
+
+    saveBtnGroup.forEach(btn => {
+        if(!btn) return;
+        btn.querySelector('.count').innerText = data.saves;
+        const icon = btn.querySelector('i');
+        if (data.isSaved) {
+            btn.classList.add('active', 'save-active');
+            icon.classList.replace('fa-regular', 'fa-solid');
+        } else {
+            btn.classList.remove('active', 'save-active');
+            icon.classList.replace('fa-solid', 'fa-regular');
+        }
+    });
 }
 
 // 5. 按鈕點擊 — 更新本地 + 同步 API
@@ -175,4 +191,69 @@ document.addEventListener('click', (e) => {
     }
 });
 
+// 新增 DOM 元素獲取
+const fullView = document.getElementById('fullView');
+const closeFullView = document.getElementById('closeFullView');
+fullLikeBtn.onclick = (e) => {
+    e.stopPropagation();
+    likeBtn.click(); // 直接觸發原本 likeBtn 的邏輯，確保同步
+};
 
+fullSaveBtn.onclick = (e) => {
+    e.stopPropagation();
+    saveBtn.click(); // 直接觸發原本 saveBtn 的邏輯，確保同步
+};
+
+// --- A. 監聽拍立得卡片點擊 ---
+// 修改原有的渲染邏輯，讓卡片被點擊時開啟 Full View
+document.querySelector('.polaroid-card').addEventListener('click', (e) => {
+    // 排除掉點擊關閉按鈕或反應按鈕的狀況
+    if (e.target.closest('.close-modal') || e.target.closest('.action-item')) return;
+    openFullView();
+});
+
+// --- B. 開啟詳情層與抓取資料 ---
+async function openFullView() {
+    const post = postsData[currentPostIndex];
+    if (!post) return;
+
+    updateModal(currentPostIndex); // 確保內容是最新的
+    fullView.classList.add('active');
+
+    try {
+        const detail = await fetchAPI(`/api/posts/${post.id}`);
+        renderReactionStats(detail.reactions);
+    } catch (err) {
+        console.error("無法載入反應統計", err);
+    }
+}
+
+// --- C. 動態渲染 5 種反應按鈕 ---
+function renderReactionStats(counts) {
+    // 反應類型與 Emoji 對照 (與 type.ts 同步)
+    const emojiMap = {
+        hilarious: "😂",
+        wtf: "🤯",
+        nice: "👍",
+        doubt: "🤔",
+        boring: "👎"
+    };
+
+    const container = document.getElementById('reactionStats');
+    container.innerHTML = Object.keys(emojiMap).map(type => `
+        <button class="reaction-btn-pill" onclick="handleReactionClick('${type}')">
+            <span style="font-size: 1.4rem;">${emojiMap[type]}</span>
+            <span>${counts[type] || 0}</span>
+        </button>
+    `).join('');
+}
+
+// --- D. 處理反應點擊 (預留給未來 PATCH /api/posts/[id]/reactions) ---
+function handleReactionClick(type) {
+    console.log("用戶點擊了反應:", type);
+    // 這裡可以呼叫 API 同步反應
+}
+
+closeFullView.onclick = () => fullView.classList.remove('active');
+
+// 點擊地圖標記時，確保標記會放大並更新 Modal (原本的邏輯)
