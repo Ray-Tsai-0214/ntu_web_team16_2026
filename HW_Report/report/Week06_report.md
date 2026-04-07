@@ -55,6 +55,6 @@
 # 3. 組員分工情況 (共100%)，第16組
 
 - 林芷葳 25%
-- 韓承芯 25%
+- 韓承芯 25% 調整homepage架構，新增:點擊地標貼文後可展開更詳細內容，並且保留未來可以實現瀏覽留言以及留言的架構。修復bug:原本在定位點發布貼文後，若能停留原地會因為使用者的藍色標記遮蓋到紅色地標而無法點擊查看--目前已修復。
 - 周世恩 25%
 - 蔡秉叡 25% 後端從 in-memory 遷移到 Supabase（4 張表 + RLS policies + SECURITY DEFINER triggers + 15 筆 landmark seed migration）、設計並實作 username-only 身分驗證系統（synthetic-email + Supabase Auth admin client）、新增 `/api/auth/{signup,login,logout,me}` 四個路由、改寫所有既有 API routes 加上 session 檢查（`auth.uid()` 取代 request body 的 `authorId`）、建立 `lib/supabase/{server,admin,mappers,database.types}.ts`、新增 Next.js middleware 自動 refresh session cookie、配置 project-local `.mcp.json` 隔離 Supabase project、把 GitHub PAT 從明文搬到環境變數
