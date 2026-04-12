@@ -5,6 +5,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // ── 1. fetch full profile + this user's posts ──
   let posts = [];
+  // Runtime cache of the detail overlay nodes used when opening a post.
+  let postDetailLayer = null;
   try {
     const data = await fetchAPI(`/api/users/${me.id}`);
     posts = data.posts || [];
@@ -31,9 +33,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   const postFeed = document.querySelector('.post-feed');
   if (posts.length > 0) {
     postFeed.innerHTML = '';
-    posts.forEach((post) => {
+    posts.forEach((post, index) => {
       const article = document.createElement('article');
       article.className = 'post-card';
+      // Keep the data source simple: each card maps back to posts[index].
+      article.dataset.postIndex = String(index);
       article.innerHTML = `
         <div class="post-header">
           <div class="author-avatar">${me.avatarEmoji}</div>
@@ -56,6 +60,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       `;
       postFeed.appendChild(article);
     });
+    // Build once, then reuse for all post-card clicks.
+    postDetailLayer = createPostDetailLayer();
   } else {
     postFeed.innerHTML = `
       <div class="empty-feed">
@@ -102,6 +108,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // ── 7. reaction button toggle (event delegation) ──
   postFeed.addEventListener('click', function (e) {
+    // Card click opens detail view, but reaction button clicks stay local.
+    const card = e.target.closest('.post-card');
+    if (card && !e.target.closest('.reaction-btn')) {
+      const index = Number(card.dataset.postIndex);
+      openPostDetailByIndex(index, posts, postDetailLayer);
+      return;
+    }
+
     const btn = e.target.closest('.reaction-btn');
     if (!btn) return;
     const counterSpan = btn.querySelector('span');
@@ -148,4 +162,78 @@ function escapeHtml(s) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
+}
+
+function createPostDetailLayer() {
+  // Reuse an existing layer if this function is called again.
+  let root = document.getElementById('profilePostDetail');
+  if (!root) {
+    root = document.createElement('div');
+    root.id = 'profilePostDetail';
+    root.setAttribute('aria-hidden', 'true');
+    root.innerHTML = `
+      <div class="detail-backdrop" data-close="backdrop"></div>
+      <section class="detail-sheet" role="dialog" aria-modal="true" aria-label="Post details">
+        <button class="detail-close" type="button" data-close="button" aria-label="Close">&times;</button>
+        <img class="detail-image" alt="Post image" />
+        <p class="detail-text"></p>
+        <div class="detail-tags"></div>
+        <div class="detail-meta">
+          <span class="detail-date"></span>
+          <span class="detail-stats"></span>
+        </div>
+      </section>
+    `;
+    document.body.appendChild(root);
+  }
+
+  const closeLayer = () => {
+    root.classList.remove('is-open');
+    root.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+  };
+
+  // Click either backdrop or close button to dismiss.
+  root.addEventListener('click', (e) => {
+    if (e.target.closest('[data-close]')) closeLayer();
+  });
+
+  // Keyboard escape support improves accessibility.
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && root.classList.contains('is-open')) closeLayer();
+  });
+
+  return {
+    root,
+    img: root.querySelector('.detail-image'),
+    text: root.querySelector('.detail-text'),
+    tags: root.querySelector('.detail-tags'),
+    date: root.querySelector('.detail-date'),
+    stats: root.querySelector('.detail-stats'),
+  };
+}
+
+function openPostDetailByIndex(index, posts, layer) {
+  // Guard against stale clicks or missing DOM references.
+  if (!layer || Number.isNaN(index) || index < 0 || index >= posts.length) return;
+  const post = posts[index];
+
+  // Show image only when this post actually has one.
+  if (post.img) {
+    layer.img.src = post.img;
+    layer.img.style.display = 'block';
+  } else {
+    layer.img.removeAttribute('src');
+    layer.img.style.display = 'none';
+  }
+
+  layer.text.textContent = post.text || '';
+  layer.tags.innerHTML = (post.tags || []).map((t) => `<span class="tag">#${escapeHtml(t)}</span>`).join('');
+  layer.date.textContent = post.date || '';
+  layer.stats.textContent = `Likes ${post.likes || 0} • Saves ${post.saves || 0}`;
+
+  // Lock background scroll while the detail sheet is open.
+  layer.root.classList.add('is-open');
+  layer.root.setAttribute('aria-hidden', 'false');
+  document.body.style.overflow = 'hidden';
 }

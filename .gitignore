@@ -26,3 +26,6 @@ next-env.d.ts
 # Claude Code local settings (user-specific, not for sharing)
 .claude/
 **/.claude/
+
+# devcontainer
+.devcontainer/
