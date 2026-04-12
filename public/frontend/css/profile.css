@@ -223,6 +223,16 @@ body {
   color: var(--textLight);
   cursor: pointer;
   transition: all 0.3s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.tab-btn:focus {
+  outline: none;
+}
+
+.tab-btn:focus-visible {
+  outline: 2px solid var(--mutedBrown);
+  outline-offset: 2px;
 }
 
 .tab-btn.active {
