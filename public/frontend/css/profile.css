@@ -33,6 +33,23 @@ body {
   color: var(--textDark);
 }
 
+/* Keep all profile buttons/link-buttons consistent on mobile and keyboard */
+button,
+.back-btn {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:focus,
+.back-btn:focus {
+  outline: none;
+}
+
+button:focus-visible,
+.back-btn:focus-visible {
+  outline: 2px solid var(--mutedBrown);
+  outline-offset: 2px;
+}
+
 /* Mobile-First Container Simulator */
 .app-container {
   width: 100%;
@@ -223,16 +240,6 @@ body {
   color: var(--textLight);
   cursor: pointer;
   transition: all 0.3s ease;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.tab-btn:focus {
-  outline: none;
-}
-
-.tab-btn:focus-visible {
-  outline: 2px solid var(--mutedBrown);
-  outline-offset: 2px;
 }
 
 .tab-btn.active {
