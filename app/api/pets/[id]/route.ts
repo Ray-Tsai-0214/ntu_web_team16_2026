@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { toApiPet, PetRow } from "@/lib/supabase/mappers";
+import { TablesUpdate } from "@/lib/supabase/database.types";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -73,7 +74,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 
   const { data, error } = await supabase
     .from("pets")
-    .update(patch)
+    .update(patch as TablesUpdate<"pets">)
     .eq("pet_id", id)
     .eq("user_id", user.id)   // RLS also enforces this; double-check here
     .select()
