@@ -28,7 +28,7 @@
         </svg>
       </button>
       <div class="petNameWrapper">
-        <span class="petName">泡泡 🐾</span>
+        <span class="petName" id="petNameDisplay">泡泡 🐾</span>
       </div>
       <div style="width:36px; flex-shrink:0;"></div>
     </header>
@@ -40,7 +40,7 @@
       <div style="display:flex; align-items:center; gap:6px;">
         <div class="gemRow">
           <span class="gemIcon">💎</span>
-          <span class="gemValue" id="gemValue">1000</span>
+          <span class="gemValue" id="gemValue">0</span>
         </div>
         <div class="statCard">
           <div class="statLabel"><span>⭐</span> 經驗值</div>
@@ -59,10 +59,25 @@
         </div>
         <div class="statNum" id="hungerText">0 / 100</div>
       </div>
+      <!-- 健康 -->
+      <div class="statCard">
+        <div class="statLabel"><span>❤️</span> 健康</div>
+          <div class="barTrack">
+            <div class="barFill" id="barHealth" style="width:100%"></div>
+          </div>
+        <div class="statNum" id="healthText">100 / 100</div>
+      </div>
 
+      <!-- 心情 -->
+      <div class="statCard">
+        <div class="statLabel"><span>💭</span> 心情</div>
+          <div class="barTrack">
+            <div class="barFill" id="barMood" style="width:100%"></div>
+          </div>
+        <div class="statNum" id="moodText">100 / 100</div>
+      </div>
     </aside>
 
-    <!-- 寵物角色（中央） -->
     <!-- 寵物角色（中央） -->
 <div class="petWrapper" id="petWrapper" onclick="petTap()">
   <div id="petAccessory"></div>
@@ -71,8 +86,8 @@
 
   <!-- 分層圖片：deco → face → body（由下往上疊） -->
   <div class="petLayerWrap">
-    <img class="petLayer" id="layerBody" src="" alt="body" />
-    <img class="petLayer" id="layerFace" src="" alt="face" />
+    <img class="petLayer" id="layerBody" src="assets/pet/body_0.png" alt="body" />
+    <img class="petLayer" id="layerFace" src="assets/pet/face_0.png" alt="face" />
     <img class="petLayer petLayerDeco" id="layerDeco" src="" alt="deco" />
   </div>
 </div>
