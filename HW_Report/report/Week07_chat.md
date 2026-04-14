@@ -204,5 +204,11 @@ import { TablesUpdate } from "@/lib/supabase/database.types";
 - 已確認 `profile.js` 不再保留 `profilePostDetailStyles` 動態 style 注入關鍵字
 
 # 林芷葳
+這是我的js檔案，我想，以下是我的夥伴給我的內容，我希望把name改成可以讓使用者輸入的形式，以及coins調用這邊的資訊，health跟mood也是，改成每1小時會自動下降10點
 
+Supabase（已建立）：
+
+pets table — 23 個欄位，CHECK (0-100) constraint on hunger/cleanliness/mood/health
+updated_at trigger — 每次 UPDATE 自動更新
+RLS 政策：任何人可讀，只有 owner 可寫入/更新/刪除 Response 格式（全部 camelCase）： {"petId": "...", "userId": "...", "name": "...", "species": "...", "stage": "egg", "level": 1, "exp": 0, "hunger": 100, "cleanliness": 100, "mood": 100, "health": 100, "favorability": 0, "skin": "...", "outfit": "...", "accessory": [], "expression": "normal", "currentAction": "idle", "lastFeedTime": null, "lastCleanTime": null, "affinity": {}, "coins": 0, "inventory": [], "createdAt": "...", "updatedAt": "..." } --- 只要 git pull 就能用，Supabase table 是雲端共享的，不需要任何 Supabase 或 Vercel 權限，直接 call API 就好。
 

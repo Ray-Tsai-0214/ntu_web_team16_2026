@@ -610,9 +610,10 @@ function petTap() {
   pop.classList.remove('active');
   void pop.offsetWidth;
   pop.classList.add('active');
-  state.coins += 20;
+  state.coins += 5;
   setTimeout(() => pop.classList.remove('active'), 900);
   showPetSpeech();
+  updateStats();
 }
 
 // ── Modal ──
