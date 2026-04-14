@@ -72,6 +72,33 @@
 - TypeScript 型別與 DB schema 一致，無手動修改
 - API routes push 後 Vercel 自動部署完成
 
+---
+
+### Turn 4：Vercel build 失敗 — TypeScript 型別錯誤修復
+
+**錯誤訊息（Vercel build log）：**
+
+```
+./app/api/pets/[id]/route.ts:76:13
+Type error: Argument of type 'Record<string, unknown>' is not assignable to
+parameter of type 'RejectExcessProperties<{ accessory?: Json | undefined; ... }, Record<...>>'.
+  Type 'Record<string, unknown>' is not assignable to type '{ [x: string]: never; }'.
+    'string' index signatures are incompatible.
+      Type 'unknown' is not assignable to type 'never'.
+```
+
+**根本原因：** Supabase client 的 `.update()` 使用嚴格泛型 `RejectExcessProperties<PetsUpdate, ...>`，會拒絕帶有 string index signature 的 `Record<string, unknown>` 型別（與 `never` 不相容）。
+
+**解決方式：** 在 `app/api/pets/[id]/route.ts` import `TablesUpdate` 型別，並在呼叫 `.update()` 時將動態 patch 物件 cast 為正確型別：
+
+```typescript
+import { TablesUpdate } from "@/lib/supabase/database.types";
+// ...
+.update(patch as TablesUpdate<"pets">)
+```
+
+**結果：** TypeScript 型別檢查通過（`tsc --noEmit` 無輸出），push 後 Vercel 重新 build 成功。
+
   
 # 韓承芯
 
