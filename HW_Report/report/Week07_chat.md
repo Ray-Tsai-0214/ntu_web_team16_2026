@@ -1,5 +1,76 @@
 # 蔡秉叡
 
+### Turn 1：需求提出（為寵物功能建立後端資料表）
+
+**User：** 這些是我的組員未來開發可能需要的變數，請你先幫我建立好在後端讓他們可以呼叫。（提供 23 個欄位定義：petId、name、species、stage、level、exp、hunger、cleanliness、mood、health、favorability、skin、outfit、accessory、expression、currentAction、lastFeedTime、lastCleanTime、affinity、createdAt、updatedAt、coins、inventory）
+
+**Claude：** 在 Supabase 建立 `pets` 資料表，並完整設定約束、觸發器與 RLS 政策：
+
+- 建立 `pets` table，共 23 個欄位
+  - 數值類型欄位（`hunger`、`cleanliness`、`mood`、`health`）加上 `CHECK (value BETWEEN 0 AND 100)` 約束
+  - JSON 欄位（`accessory`、`affinity`、`inventory`）使用 `jsonb` 類型，預設值分別為 `[]` 或 `{}`
+  - 時間欄位 `created_at` / `updated_at` 預設 `now()`；`last_feed_time` / `last_clean_time` 允許 null
+- 建立 `set_pet_updated_at()` trigger function，每次 UPDATE 自動將 `updated_at` 設為當前時間
+- 啟用 Row Level Security（RLS），設定四條政策：
+  - `pets_select_public`：任何人可讀（公開瀏覽寵物）
+  - `pets_insert_owner`：只有 owner（`auth.uid() = user_id`）可建立
+  - `pets_update_owner`：只有 owner 可更新
+  - `pets_delete_owner`：只有 owner 可刪除
+
+---
+
+### Turn 2：同步 TypeScript 型別與 Mapper
+
+**Claude：** 資料表建立後，同步更新前後端共用型別與轉換層：
+
+- 重新產生 `lib/supabase/database.types.ts`，加入 `pets` 的完整 Row / Insert / Update 型別定義
+- 在 `lib/supabase/mappers.ts` 新增 `PetRow` interface 與 `toApiPet()` 轉換函數（snake_case → camelCase）
+
+---
+
+### Turn 3：建立 REST API Routes
+
+**Claude：** 新增兩個 API 路由，提供組員可直接呼叫的 endpoint：
+
+- `app/api/pets/route.ts`
+  - `GET /api/pets`：取得所有寵物；支援 `?userId=<id>` 篩選特定使用者的寵物（公開）
+  - `POST /api/pets`：建立新寵物，`user_id` 從 session 取得，無法偽造（需登入）
+- `app/api/pets/[id]/route.ts`
+  - `GET /api/pets/:id`：取得單一寵物（公開）
+  - `PATCH /api/pets/:id`：部分更新任意欄位，自動處理 camelCase → snake_case 映射（只有 owner 可操作）
+  - `DELETE /api/pets/:id`：刪除寵物（只有 owner 可操作）
+
+完成後 push 至 `main`，Vercel 自動部署。組員只需 `git pull` 即可直接呼叫 API，無需 Supabase 或 Vercel 權限。
+
+---
+
+### 本次完成檔案
+
+```
+新增：
+  app/api/pets/route.ts
+      - GET /api/pets（公開，支援 ?userId= 篩選）
+      - POST /api/pets（需登入，user_id 從 session 取）
+
+  app/api/pets/[id]/route.ts
+      - GET /api/pets/:id（公開）
+      - PATCH /api/pets/:id（owner only，camelCase 自動映射）
+      - DELETE /api/pets/:id（owner only）
+
+修改：
+  lib/supabase/database.types.ts
+      - 重新產生，加入 pets 表型別
+
+  lib/supabase/mappers.ts
+      - 新增 PetRow interface
+      - 新增 toApiPet() camelCase 轉換函數
+```
+
+### 驗證結果
+
+- Supabase migration 套用成功（`pets` table 建立，RLS 啟用）
+- TypeScript 型別與 DB schema 一致，無手動修改
+- API routes push 後 Vercel 自動部署完成
 
   
 # 韓承芯
