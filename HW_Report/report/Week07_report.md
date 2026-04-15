@@ -45,5 +45,5 @@ DOM 操作與渲染時機
 ## 3. 組員分工情況 (共100%)，第16組
 林芷葳 25% 加入金錢到調取資料庫數據，且可修改寵物命名。
 韓承芯 25%
-周世恩 25% 
+周世恩 25% 實作 profile 貼文點擊展開詳情層（動態建立 overlay、支援 backdrop/關閉鍵/Esc 關閉與捲動鎖定）、補上 profile.js 關鍵註解、將 JS 內嵌樣式完整搬移至 profile.css，並修正手機點擊藍色高亮與統一全頁按鈕 focus/tap 互動樣式。
 蔡秉叡 25% 後端從 in-memory 遷移到 Supabase（4 張表 + RLS policies + SECURITY DEFINER triggers + 15 筆 landmark seed migration）、設計並實作 username-only 身分驗證系統（synthetic-email + Supabase Auth admin client）、新增 `/api/auth/{signup,login,logout,me}` 四個路由、改寫所有既有 API routes 加上 session 檢查（`auth.uid()` 取代 request body 的 `authorId`）、建立 `lib/supabase/{server,admin,mappers,database.types}.ts`、新增 Next.js middleware 自動 refresh session cookie、配置 project-local `.mcp.json` 隔離 Supabase project、把 GitHub PAT 從明文搬到環境變數
