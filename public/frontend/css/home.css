@@ -524,3 +524,18 @@ body {
     outline: none;
     background-color: #fcfcfc;  /* 讓輸入框背景淡一點點，更有層次 */
 }
+
+/* Header 天氣標籤 */
+.header-weather {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--mutedBrown);
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 20px;
+    padding: 5px 12px;
+    margin-left: auto;   /* 推到右側靠近頭像 */
+    margin-right: 10px;
+    white-space: nowrap;
+    box-shadow: 0 2px 5px rgba(178, 149, 134, 0.15);
+    letter-spacing: 0.3px;
+}
