@@ -6,6 +6,30 @@ const map = new mapboxgl.Map({
     center: [121.564, 25.033],
     zoom: 14
 });
+// Open-Meteo：座標 → 天氣（免費、無需 key）
+const WMO_ICONS = {
+    0: '☀️', 1: '🌤', 2: '⛅', 3: '☁️',
+    45: '🌫', 48: '🌫',
+    51: '🌦', 53: '🌦', 55: '🌧',
+    61: '🌧', 63: '🌧', 65: '🌧',
+    71: '🌨', 73: '🌨', 75: '❄️',
+    80: '🌦', 81: '🌧', 82: '⛈',
+    95: '⛈', 96: '⛈', 99: '⛈'
+};
+
+async function fetchWeather(coords) {
+    const [lng, lat] = coords;
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current_weather=true&timezone=Asia%2FTaipei`;
+    try {
+        const res = await fetch(url);
+        const data = await res.json();
+        const { temperature, weathercode } = data.current_weather;
+        const icon = WMO_ICONS[weathercode] ?? '🌡';
+        return `${icon} ${temperature}°C`;
+    } catch {
+        return '天氣載入失敗';
+    }
+}
 
 // 2. 從 API 載入貼文（取代硬編碼的 postsData）
 let postsData = [];
@@ -117,6 +141,11 @@ function showUserLocation() {
 
             // 移動地圖中心到使用者位置
             map.flyTo({ center: [lng, lat], zoom: 15, duration: 1500 });
+            // 新增：抓天氣
+            fetchWeather([lng, lat]).then(w => {
+                const el = document.getElementById('headerWeather');
+                if (el) el.innerText = w;
+            });
         },
         () => { /* 定位失敗就不處理 */ },
         { enableHighAccuracy: true, timeout: 8000 }
