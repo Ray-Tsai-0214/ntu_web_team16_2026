@@ -439,13 +439,31 @@
       const tags = [...activeTags].map(t => t.textContent.replace('#', ''));
 
       try {
+        // If the user picked an image, upload it first and use the returned URL.
+        let imgUrl = '';
+        const file = mediaInput.files[0];
+        if (file) {
+          const fd = new FormData();
+          fd.append('file', file);
+          const uploadRes = await fetch('/api/posts/upload', {
+            method: 'POST',
+            credentials: 'include',
+            body: fd,
+          });
+          const uploadJson = await uploadRes.json().catch(() => ({}));
+          if (!uploadRes.ok) {
+            throw new Error(uploadJson.error || `Image upload failed (${uploadRes.status})`);
+          }
+          imgUrl = uploadJson.url;
+        }
+
         // author_id is taken from the session by the API — never sent in the body.
         const newPost = await fetchAPI('/api/posts', {
           method: 'POST',
           body: JSON.stringify({
             landmarkName: selectedLandmark.name,
             coords: [selectedLandmark.lng, selectedLandmark.lat],
-            img: '',
+            img: imgUrl,
             text: story,
             tags: tags,
           }),
